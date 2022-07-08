@@ -9,6 +9,7 @@ import (
 	"os"
 
 	"grayson/cct/lib"
+	githubapi "grayson/cct/lib/GithubApi"
 )
 
 func loadEnv() *lib.Env {
@@ -19,21 +20,6 @@ func loadEnv() *lib.Env {
 	}
 	return lib.NewEnv(os.LookupEnv, readers)
 }
-
-type GithubOrgReposErrorResponse struct {
-	Message          string `json:"message"`
-	DocumentationURL string `json:"documentation_url"`
-}
-
-type GithubOrgReposResponseItem struct {
-	Identifier int    `json:"id"`
-	Name       string `json:"name"`
-	FullName   string `json:"full_name"`
-	GitUrl     string `json:"git_url"`
-	HtmlUrl    string `json:"html_url"`
-}
-
-type GithubOrgReposeResponse []GithubOrgReposResponseItem
 
 func main() {
 	env := loadEnv()
@@ -57,7 +43,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var tmp GithubOrgReposeResponse
+	var tmp githubapi.GithubOrgReposeResponse
 	json.Unmarshal(bytes, &tmp)
 
 	log.Printf("%#v\n", tmp)
