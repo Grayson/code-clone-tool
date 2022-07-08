@@ -6,6 +6,7 @@ import (
 
 type Env struct {
 	PersonalAccessToken string
+	OrganizationUrl     string
 }
 
 type GetEnvVar func(string) (string, bool)
@@ -13,8 +14,16 @@ type ReadYamlFile func() ([]byte, error)
 
 type LoadStatus int8
 
+type EnvironmentVariableKey string
+
+const (
+	PersonalAccessToken EnvironmentVariableKey = "PERSONAL_ACCESS_TOKEN"
+	OrganizationUrl     EnvironmentVariableKey = "ORG_URL"
+)
+
 type envFile struct {
 	PersonalAccessToken string `yaml:"personal_access_token"`
+	OrganizationUrl     string `yaml:"org_url"`
 }
 
 type envFileWrapper struct {
@@ -50,12 +59,24 @@ func loadEnvFile(reader ReadYamlFile) *envFileWrapper {
 }
 
 func getPersonalAccessToken(get GetEnvVar, load loadYamlEnvFile) string {
-	value, ok := get("GH_PERSONAL_ACCESS_TOKEN")
+	value, ok := get(string(PersonalAccessToken))
 	if ok {
 		return value
 	}
 	if env := load(); env.Status == Loaded {
 		return env.EnvFile.PersonalAccessToken
+	}
+
+	return ""
+}
+
+func getOrganizationUrl(get GetEnvVar, load loadYamlEnvFile) string {
+	value, ok := get(string(OrganizationUrl))
+	if ok {
+		return value
+	}
+	if env := load(); env.Status == Loaded {
+		return env.EnvFile.OrganizationUrl
 	}
 
 	return ""
@@ -81,5 +102,6 @@ func NewEnv(get GetEnvVar, read []ReadYamlFile) *Env {
 
 	return &Env{
 		PersonalAccessToken: getPersonalAccessToken(get, loader),
+		OrganizationUrl:     getOrganizationUrl(get, loader),
 	}
 }

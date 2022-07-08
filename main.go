@@ -29,6 +29,8 @@ type GithubOrgReposResponseItem struct {
 	Identifier int    `json:"id"`
 	Name       string `json:"name"`
 	FullName   string `json:"full_name"`
+	GitUrl     string `json:"git_url"`
+	HtmlUrl    string `json:"html_url"`
 }
 
 type GithubOrgReposeResponse []GithubOrgReposResponseItem
@@ -36,7 +38,7 @@ type GithubOrgReposeResponse []GithubOrgReposResponseItem
 func main() {
 	env := loadEnv()
 
-	req, err := http.NewRequest("GET", "https://api.github.com/orgs/<org-name>/repos", nil)
+	req, err := http.NewRequest("GET", env.OrganizationUrl, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -58,5 +60,5 @@ func main() {
 	var tmp GithubOrgReposeResponse
 	json.Unmarshal(bytes, &tmp)
 
-	log.Println(tmp)
+	log.Printf("%#v\n", tmp)
 }
