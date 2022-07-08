@@ -1,9 +1,6 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -24,27 +21,13 @@ func loadEnv() *lib.Env {
 func main() {
 	env := loadEnv()
 
-	req, err := http.NewRequest("GET", env.OrganizationUrl, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-	req.Header.Add("Accept", "application/vnd.github+json")
-	req.Header.Add("Authorization", fmt.Sprintf("token %s", env.PersonalAccessToken))
+	client := githubapi.NewClient(http.DefaultClient, env.PersonalAccessToken)
+	resp, err := client.FetchOrgInformation(env.OrganizationUrl)
 
-	client := http.DefaultClient
-	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	defer resp.Body.Close()
-	bytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	var tmp githubapi.GithubOrgReposeResponse
-	json.Unmarshal(bytes, &tmp)
-
+	tmp, _ := resp.GetLeft()
 	log.Printf("%#v\n", tmp)
 }
