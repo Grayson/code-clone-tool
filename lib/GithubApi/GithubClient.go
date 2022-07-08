@@ -51,7 +51,7 @@ func (c *GithubClient) FetchOrgInformation(url string) (out *either.Either[*Gith
 
 	var repoResponse GithubOrgReposResponse
 	json.Unmarshal(bytes, &repoResponse)
-	out = either.Of[*GithubOrgReposResponse, *GithubOrgReposErrorResponse](repoResponse)
+	out = either.Of[*GithubOrgReposResponse, *GithubOrgReposErrorResponse](&repoResponse)
 
 	return
 }
