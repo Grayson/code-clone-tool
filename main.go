@@ -28,6 +28,13 @@ func main() {
 		log.Fatal(err)
 	}
 
-	tmp, _ := resp.GetLeft()
-	log.Printf("%#v\n", tmp)
+	if errResp, ok := resp.GetRight(); ok {
+		log.Printf("Service error with the following message:\n%v\n\n%v", errResp.Message, errResp.DocumentationURL)
+		return
+	}
+
+	repos, _ := resp.GetLeft()
+	for _, repo := range *repos {
+		log.Printf("Repo: %v @ %v", repo.FullName, repo.GitUrl)
+	}
 }
