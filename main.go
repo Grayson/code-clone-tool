@@ -34,7 +34,29 @@ func main() {
 	}
 
 	repos, _ := resp.GetLeft()
+	log.Printf("%#v", mapActions(repos))
+}
+
+func mapActions(repos *githubapi.GithubOrgReposResponse) (actions []lib.Action) {
 	for _, repo := range *repos {
-		log.Printf("Repo: %v @ %v", repo.FullName, repo.GitUrl)
+		action := lib.Action{
+			Task:   lib.DiscernTask(repo.FullName, discernPathInfo),
+			Path:   repo.FullName,
+			GitUrl: repo.GitUrl,
+		}
+		actions = append(actions, action)
 	}
+	return
+}
+
+func discernPathInfo(path string) (lib.PathExistential, lib.PathType) {
+	info, err := os.Stat(path)
+	if err != nil && os.IsNotExist(err) {
+		return lib.DoesNotExist, lib.None
+	}
+
+	if info.IsDir() {
+		return lib.Exists, lib.IsDirectory
+	}
+	return lib.Exists, lib.IsFile
 }
