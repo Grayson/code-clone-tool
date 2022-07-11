@@ -37,14 +37,17 @@ func main() {
 
 	repos, _ := resp.GetLeft()
 	gc := githubclient.CreateGitClient(log.Default())
+	cloneCount, pullCount := 0, 0
 	for _, action := range mapActions(repos) {
 		var output string
 		var err error
 		switch action.Task {
 		case lib.Clone:
 			output, err = gc.Clone(action.GitUrl, action.Path)
+			cloneCount++
 		case lib.Pull:
 			output, err = gc.Pull(action.Path)
+			pullCount++
 		default:
 			panic(fmt.Sprintf("Unexpected task: %v", action.Task.String()))
 		}
@@ -53,6 +56,9 @@ func main() {
 		}
 		log.Print(output)
 	}
+
+	log.Println()
+	log.Println("Pulled:", pullCount, "Cloned:", cloneCount)
 }
 
 func mapActions(repos *githubapi.GithubOrgReposResponse) (actions []lib.Action) {
