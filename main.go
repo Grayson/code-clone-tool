@@ -40,8 +40,7 @@ func main() {
 			},
 		},
 		Action: func(*cli.Context) error {
-			run(env)
-			return nil
+			return run(mergeEnvs(&flagsEnv, loadEnv()))
 		},
 	}
 
