@@ -28,6 +28,20 @@ func main() {
 	app := &cli.App{
 		Name:  "code-clone-tool",
 		Usage: "easily clone repos",
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:        "personalaccesstoken",
+				Usage:       "Github Personal Access Token generated at https://github.com/settings/tokens",
+				Aliases:     []string{"pat", "token", "t"},
+				Destination: &env.PersonalAccessToken,
+			},
+			&cli.StringFlag{
+				Name:        "url",
+				Usage:       "URL to Github API for an org or a user similar to: https://api.github.com/orgs/<ORG>/repos or https://api.github.com/user/repos",
+				Aliases:     []string{"u"},
+				Destination: &env.OrganizationUrl,
+			},
+		},
 		Action: func(*cli.Context) error {
 			run(env)
 			return nil
