@@ -13,17 +13,8 @@ import (
 	githubapi "grayson/cct/lib/GithubApi"
 )
 
-func loadEnv() *lib.Env {
-	readers := []lib.ReadYamlFile{
-		func() ([]byte, error) {
-			return os.ReadFile(".env")
-		},
-	}
-	return lib.NewEnv(os.LookupEnv, readers)
-}
-
 func main() {
-	env := loadEnv()
+	flagsEnv := lib.Env{}
 
 	app := &cli.App{
 		Name:  "code-clone-tool",
@@ -33,19 +24,19 @@ func main() {
 				Name:        "personalaccesstoken",
 				Usage:       "Github Personal Access Token generated at https://github.com/settings/tokens",
 				Aliases:     []string{"pat", "token", "t"},
-				Destination: &env.PersonalAccessToken,
+				Destination: &flagsEnv.PersonalAccessToken,
 			},
 			&cli.StringFlag{
 				Name:        "url",
 				Usage:       "URL to Github API for an org or a user similar to: https://api.github.com/orgs/<ORG>/repos or https://api.github.com/user/repos",
 				Aliases:     []string{"u"},
-				Destination: &env.ApiUrl,
+				Destination: &flagsEnv.ApiUrl,
 			},
 			&cli.StringFlag{
 				Name:        "workingdirectory",
 				Usage:       "Change internal working directory",
 				Aliases:     []string{"dir", "wd"},
-				Destination: &env.WorkingDirectory,
+				Destination: &flagsEnv.WorkingDirectory,
 			},
 		},
 		Action: func(*cli.Context) error {
@@ -100,6 +91,28 @@ func run(env *lib.Env) error {
 	log.Println()
 	log.Println("Pulled:", pullCount, "Cloned:", cloneCount)
 	return nil
+}
+
+func loadEnv() *lib.Env {
+	readers := []lib.ReadYamlFile{
+		func() ([]byte, error) {
+			return os.ReadFile(".env")
+		},
+	}
+	return lib.NewEnv(os.LookupEnv, readers)
+}
+
+func mergeEnvs(change *lib.Env, into *lib.Env) *lib.Env {
+	if change.ApiUrl != "" {
+		into.ApiUrl = change.ApiUrl
+	}
+	if change.PersonalAccessToken != "" {
+		into.PersonalAccessToken = change.PersonalAccessToken
+	}
+	if change.WorkingDirectory != "" {
+		into.WorkingDirectory = change.WorkingDirectory
+	}
+	return into
 }
 
 func mapActions(repos *githubapi.GithubOrgReposResponse) (actions []lib.Action) {

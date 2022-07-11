@@ -25,14 +25,14 @@ const (
 	WorkingDirectory    EnvironmentVariableKey = "WORKING_DIRECTORY"
 )
 
-type envFile struct {
+type EnvFile struct {
 	PersonalAccessToken string `yaml:"personal_access_token"`
 	ApiUrl              string `yaml:"api_url"`
 	WorkingDirectory    string `yaml:"working_directory"`
 }
 
 type envFileWrapper struct {
-	EnvFile envFile
+	EnvFile EnvFile
 	Status  LoadStatus
 }
 
@@ -57,7 +57,7 @@ func (e *envFileWrapper) lookup(key EnvironmentVariableKey) string {
 }
 
 func loadEnvFile(reader ReadYamlFile) *envFileWrapper {
-	var file envFile
+	var file EnvFile
 	bytes, err := reader()
 	if err != nil {
 		return &envFileWrapper{
