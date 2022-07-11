@@ -60,7 +60,7 @@ func mapActions(repos *githubapi.GithubOrgReposResponse) (actions []lib.Action) 
 		action := lib.Action{
 			Task:   lib.DiscernTask(repo.FullName, discernPathInfo),
 			Path:   repo.FullName,
-			GitUrl: repo.GitUrl,
+			GitUrl: repo.SshUrl,
 		}
 		actions = append(actions, action)
 	}
