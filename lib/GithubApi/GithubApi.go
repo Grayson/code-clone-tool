@@ -13,6 +13,7 @@ type GithubOrgReposResponseItem struct {
 	FullName   string `json:"full_name"`
 	GitUrl     string `json:"git_url"`
 	HtmlUrl    string `json:"html_url"`
+	SshUrl     string `json:"ssh_url"`
 }
 
 type GithubOrgReposResponse []GithubOrgReposResponseItem
