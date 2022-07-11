@@ -23,11 +23,13 @@ func loadEnv() *lib.Env {
 }
 
 func main() {
+	env := loadEnv()
+
 	app := &cli.App{
 		Name:  "code-clone-tool",
 		Usage: "easily clone repos",
 		Action: func(*cli.Context) error {
-			run()
+			run(env)
 			return nil
 		},
 	}
@@ -35,22 +37,18 @@ func main() {
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
-
 }
 
-func run() {
-	env := loadEnv()
-
+func run(env *lib.Env) error {
 	client := githubapi.NewClient(http.DefaultClient, env.PersonalAccessToken)
 	resp, err := client.FetchOrgInformation(env.OrganizationUrl)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
 
 	if errResp, ok := resp.GetRight(); ok {
-		log.Printf("Service error with the following message:\n%v\n\n%v", errResp.Message, errResp.DocumentationURL)
-		return
+		return fmt.Errorf("Service error with the following message:\n%v\n\n%v", errResp.Message, errResp.DocumentationURL)
 	}
 
 	repos, _ := resp.GetLeft()
@@ -70,13 +68,14 @@ func run() {
 			panic(fmt.Sprintf("Unexpected task: %v", action.Task.String()))
 		}
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 		log.Print(output)
 	}
 
 	log.Println()
 	log.Println("Pulled:", pullCount, "Cloned:", cloneCount)
+	return nil
 }
 
 func mapActions(repos *githubapi.GithubOrgReposResponse) (actions []lib.Action) {
