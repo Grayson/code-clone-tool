@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 
 	"grayson/cct/lib"
+	githubclient "grayson/cct/lib/GitApi"
 	githubapi "grayson/cct/lib/GithubApi"
 )
 
@@ -34,7 +36,23 @@ func main() {
 	}
 
 	repos, _ := resp.GetLeft()
-	log.Printf("%#v", mapActions(repos))
+	gc := githubclient.CreateGitClient(log.Default())
+	for _, action := range mapActions(repos) {
+		var output string
+		var err error
+		switch action.Task {
+		case lib.Clone:
+			output, err = gc.Clone(action.GitUrl, action.Path)
+		case lib.Pull:
+			output, err = gc.Pull(action.Path)
+		default:
+			panic(fmt.Sprintf("Unexpected task: %v", action.Task.String()))
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Print(output)
+	}
 }
 
 func mapActions(repos *githubapi.GithubOrgReposResponse) (actions []lib.Action) {
