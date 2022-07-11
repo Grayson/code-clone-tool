@@ -1,12 +1,15 @@
 package lib
 
 import (
+	"fmt"
+
 	"gopkg.in/yaml.v3"
 )
 
 type Env struct {
 	PersonalAccessToken string
 	ApiUrl              string
+	WorkingDirectory    string
 }
 
 type GetEnvVar func(string) (string, bool)
@@ -19,11 +22,13 @@ type EnvironmentVariableKey string
 const (
 	PersonalAccessToken EnvironmentVariableKey = "PERSONAL_ACCESS_TOKEN"
 	ApiUrl              EnvironmentVariableKey = "API_URL"
+	WorkingDirectory    EnvironmentVariableKey = "WORKING_DIRECTORY"
 )
 
 type envFile struct {
 	PersonalAccessToken string `yaml:"personal_access_token"`
 	ApiUrl              string `yaml:"api_url"`
+	WorkingDirectory    string `yaml:"working_directory"`
 }
 
 type envFileWrapper struct {
@@ -38,6 +43,18 @@ const (
 	Loaded
 	FailedToLoad
 )
+
+func (e *envFileWrapper) lookup(key EnvironmentVariableKey) string {
+	switch key {
+	case PersonalAccessToken:
+		return e.EnvFile.PersonalAccessToken
+	case ApiUrl:
+		return e.EnvFile.ApiUrl
+	case WorkingDirectory:
+		return e.EnvFile.WorkingDirectory
+	}
+	panic(fmt.Sprintf("Unknown key: %v", key))
+}
 
 func loadEnvFile(reader ReadYamlFile) *envFileWrapper {
 	var file envFile
@@ -82,6 +99,18 @@ func getOrganizationUrl(get GetEnvVar, load loadYamlEnvFile) string {
 	return ""
 }
 
+func getStringConfig(get GetEnvVar, load loadYamlEnvFile, key EnvironmentVariableKey) string {
+	value, ok := get(string(key))
+	if ok {
+		return value
+	}
+	if env := load(); env.Status == Loaded {
+		return env.lookup(key)
+	}
+
+	return ""
+}
+
 func NewEnv(get GetEnvVar, read []ReadYamlFile) *Env {
 	envFile := &envFileWrapper{}
 	loader := func() *envFileWrapper {
@@ -103,5 +132,6 @@ func NewEnv(get GetEnvVar, read []ReadYamlFile) *Env {
 	return &Env{
 		PersonalAccessToken: getPersonalAccessToken(get, loader),
 		ApiUrl:              getOrganizationUrl(get, loader),
+		WorkingDirectory:    getStringConfig(get, loader, WorkingDirectory),
 	}
 }

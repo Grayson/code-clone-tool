@@ -41,6 +41,12 @@ func main() {
 				Aliases:     []string{"u"},
 				Destination: &env.ApiUrl,
 			},
+			&cli.StringFlag{
+				Name:        "workingdirectory",
+				Usage:       "Change internal working directory",
+				Aliases:     []string{"dir", "wd"},
+				Destination: &env.WorkingDirectory,
+			},
 		},
 		Action: func(*cli.Context) error {
 			run(env)
