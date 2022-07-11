@@ -6,7 +6,7 @@ import (
 
 type Env struct {
 	PersonalAccessToken string
-	OrganizationUrl     string
+	ApiUrl              string
 }
 
 type GetEnvVar func(string) (string, bool)
@@ -18,12 +18,12 @@ type EnvironmentVariableKey string
 
 const (
 	PersonalAccessToken EnvironmentVariableKey = "PERSONAL_ACCESS_TOKEN"
-	OrganizationUrl     EnvironmentVariableKey = "ORG_URL"
+	ApiUrl              EnvironmentVariableKey = "API_URL"
 )
 
 type envFile struct {
 	PersonalAccessToken string `yaml:"personal_access_token"`
-	OrganizationUrl     string `yaml:"org_url"`
+	ApiUrl              string `yaml:"api_url"`
 }
 
 type envFileWrapper struct {
@@ -71,12 +71,12 @@ func getPersonalAccessToken(get GetEnvVar, load loadYamlEnvFile) string {
 }
 
 func getOrganizationUrl(get GetEnvVar, load loadYamlEnvFile) string {
-	value, ok := get(string(OrganizationUrl))
+	value, ok := get(string(ApiUrl))
 	if ok {
 		return value
 	}
 	if env := load(); env.Status == Loaded {
-		return env.EnvFile.OrganizationUrl
+		return env.EnvFile.ApiUrl
 	}
 
 	return ""
@@ -102,6 +102,6 @@ func NewEnv(get GetEnvVar, read []ReadYamlFile) *Env {
 
 	return &Env{
 		PersonalAccessToken: getPersonalAccessToken(get, loader),
-		OrganizationUrl:     getOrganizationUrl(get, loader),
+		ApiUrl:              getOrganizationUrl(get, loader),
 	}
 }

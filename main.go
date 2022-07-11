@@ -39,7 +39,7 @@ func main() {
 				Name:        "url",
 				Usage:       "URL to Github API for an org or a user similar to: https://api.github.com/orgs/<ORG>/repos or https://api.github.com/user/repos",
 				Aliases:     []string{"u"},
-				Destination: &env.OrganizationUrl,
+				Destination: &env.ApiUrl,
 			},
 		},
 		Action: func(*cli.Context) error {
@@ -55,7 +55,7 @@ func main() {
 
 func run(env *lib.Env) error {
 	client := githubapi.NewClient(http.DefaultClient, env.PersonalAccessToken)
-	resp, err := client.FetchOrgInformation(env.OrganizationUrl)
+	resp, err := client.FetchOrgInformation(env.ApiUrl)
 
 	if err != nil {
 		return err
