@@ -1,6 +1,9 @@
 package lib
 
-import "grayson/cct/lib/optional"
+import (
+	"fmt"
+	"grayson/cct/lib/optional"
+)
 
 type Task int
 
@@ -11,10 +14,24 @@ const (
 	Pull
 )
 
+func (t Task) String() string {
+	switch t {
+	case Unknown:
+		return "Unknown"
+	case Invalid:
+		return "Invalid"
+	case Clone:
+		return "Clone"
+	case Pull:
+		return "Pull"
+	}
+	panic(fmt.Sprintf("Unexpected task case %s", t.String()))
+}
+
 type Action struct {
-	task   Task
-	path   string
-	gitUrl string
+	Task   Task
+	Path   string
+	GitUrl string
 }
 
 func (act *Action) Execute() *optional.Optional[*error] {
@@ -42,7 +59,12 @@ func DiscernTask(path string, infoDiscerner DiscernPathInfo) Task {
 	existence, pathType := infoDiscerner(path)
 	switch pathType {
 	case None:
-		return Invalid
+		switch existence {
+		case Exists:
+			return Invalid
+		case DoesNotExist:
+			return Clone
+		}
 	case IsFile:
 		return Invalid
 	case IsDirectory:
