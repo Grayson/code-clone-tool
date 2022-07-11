@@ -62,7 +62,7 @@ func run(env *lib.Env) error {
 	}
 
 	if errResp, ok := resp.GetRight(); ok {
-		return fmt.Errorf("Service error with the following message:\n%v\n\n%v", errResp.Message, errResp.DocumentationURL)
+		return fmt.Errorf("service error with the following message:\n%v\n\n%v", errResp.Message, errResp.DocumentationURL)
 	}
 
 	repos, _ := resp.GetLeft()
