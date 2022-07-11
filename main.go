@@ -60,6 +60,10 @@ func main() {
 }
 
 func run(env *lib.Env) error {
+	if err := os.Chdir(env.WorkingDirectory); err != nil {
+		return err
+	}
+
 	client := githubapi.NewClient(http.DefaultClient, env.PersonalAccessToken)
 	resp, err := client.FetchOrgInformation(env.ApiUrl)
 
