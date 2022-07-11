@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/urfave/cli/v2"
+
 	"grayson/cct/lib"
 	githubclient "grayson/cct/lib/GitApi"
 	githubapi "grayson/cct/lib/GithubApi"
@@ -21,6 +23,22 @@ func loadEnv() *lib.Env {
 }
 
 func main() {
+	app := &cli.App{
+		Name:  "code-clone-tool",
+		Usage: "easily clone repos",
+		Action: func(*cli.Context) error {
+			run()
+			return nil
+		},
+	}
+
+	if err := app.Run(os.Args); err != nil {
+		log.Fatal(err)
+	}
+
+}
+
+func run() {
 	env := loadEnv()
 
 	client := githubapi.NewClient(http.DefaultClient, env.PersonalAccessToken)
