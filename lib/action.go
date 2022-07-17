@@ -57,22 +57,12 @@ type DiscernPathInfo func(path string) (PathExistential, PathType)
 
 func DiscernTask(path string, infoDiscerner DiscernPathInfo) Task {
 	existence, pathType := infoDiscerner(path)
-	switch pathType {
-	case None:
-		switch existence {
-		case Exists:
-			return Invalid
-		case DoesNotExist:
-			return Clone
-		}
-	case IsFile:
-		return Invalid
-	case IsDirectory:
-		switch existence {
-		case Exists:
+	switch existence {
+	case DoesNotExist:
+		return Clone
+	case Exists:
+		if IsDirectory == pathType {
 			return Pull
-		case DoesNotExist:
-			return Clone
 		}
 	}
 	return Invalid
