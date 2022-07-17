@@ -94,6 +94,24 @@ func TestThen(t *testing.T) {
 }
 
 func TestFinally(t *testing.T) {
+	validStart := Start(func() (string, error) { return "test", nil })
+	validNext := Then(
+		validStart,
+		func(s string) (string, error) { return s + "n", nil },
+	)
+
+	testerr := fmt.Errorf("err")
+	invalidStart := Start(func() (string, error) { return "", testerr })
+	invalidFromStartNext := Then(
+		invalidStart,
+		func(s string) (string, error) { return "", nil },
+	)
+
+	invalidIntermediate := Then(
+		validStart,
+		func(s string) (string, error) { return "", testerr },
+	)
+
 	type args struct {
 		prev Stage[string]
 		next mapNext[string, string]
@@ -104,7 +122,24 @@ func TestFinally(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			"Valid happy path",
+			args{validNext, func(s string) (string, error) { return s + ":)", nil }},
+			"testn:)",
+			false,
+		},
+		{
+			"Invalid happy path",
+			args{invalidFromStartNext, func(s string) (string, error) { return s + ":)", nil }},
+			"",
+			true,
+		},
+		{
+			"Invalid intermediate path",
+			args{invalidIntermediate, func(s string) (string, error) { return s + ":)", nil }},
+			"",
+			true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
