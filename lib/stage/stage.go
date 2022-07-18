@@ -30,3 +30,20 @@ func Finally[T any, U any](prev Stage[T], next mapNext[T, U]) (U, error) {
 	}
 	return next(prev.Value)
 }
+
+func Iterate[T any, U any](prev Stage[[]T], next mapNext[T, U]) Stage[[]U] {
+	var errOut []U
+	if prev.Err != nil {
+		return Stage[[]U]{errOut, prev.Err}
+	}
+	arr := prev.Value
+	out := make([]U, len(arr))
+	for idx, t := range arr {
+		u, err := next(t)
+		if err != nil {
+			return Stage[[]U]{errOut, err}
+		}
+		out[idx] = u
+	}
+	return Stage[[]U]{out, nil}
+}
