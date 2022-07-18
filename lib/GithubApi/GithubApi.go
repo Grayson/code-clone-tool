@@ -19,5 +19,5 @@ type GithubOrgReposResponseItem struct {
 type GithubOrgReposResponse []GithubOrgReposResponseItem
 
 type GithubApi interface {
-	FetchOrgInformation() (*either.Either[*GithubOrgReposResponse, *GithubOrgReposErrorResponse], error)
+	FetchOrgInformation(url string) (*either.Either[*GithubOrgReposResponse, *GithubOrgReposErrorResponse], error)
 }
