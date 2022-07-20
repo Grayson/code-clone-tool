@@ -2,7 +2,6 @@ package main
 
 import (
 	"grayson/cct/lib"
-	git "grayson/cct/lib/GitApi"
 	githubapi "grayson/cct/lib/GithubApi"
 	"grayson/cct/lib/fs"
 	"reflect"
@@ -73,7 +72,7 @@ func Test_countTasks(t *testing.T) {
 func Test_performGitActions(t *testing.T) {
 	type args struct {
 		action lib.Action
-		gc     git.GitApi
+		gc     TestGit
 	}
 	tests := []struct {
 		name    string
@@ -81,11 +80,62 @@ func Test_performGitActions(t *testing.T) {
 		want    lib.Task
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			"Test Clone",
+			args{
+				lib.Action{
+					Task:   lib.Clone,
+					Path:   "path",
+					GitUrl: "ssh://git-repo",
+				},
+				TestGit{},
+			},
+			lib.Clone,
+			false,
+		},
+		{
+			"Test Pull",
+			args{
+				lib.Action{
+					Task:   lib.Pull,
+					Path:   "path",
+					GitUrl: "ssh://git-repo",
+				},
+				TestGit{},
+			},
+			lib.Pull,
+			false,
+		},
+		{
+			"Test Invalid",
+			args{
+				lib.Action{
+					Task:   lib.Invalid,
+					Path:   "path",
+					GitUrl: "ssh://git-repo",
+				},
+				TestGit{},
+			},
+			lib.Invalid,
+			true,
+		},
+		{
+			"Test Unknown",
+			args{
+				lib.Action{
+					Task:   lib.Unknown,
+					Path:   "path",
+					GitUrl: "ssh://git-repo",
+				},
+				TestGit{},
+			},
+			lib.Invalid,
+			true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := performGitActions(tt.args.action, tt.args.gc)
+			got, err := performGitActions(tt.args.action, &tt.args.gc)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("performGitActions() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -237,4 +287,21 @@ func Test_discernPathInfo(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Test implementations
+
+type TestGit struct {
+	DidClone bool
+	DidPull  bool
+}
+
+func (g *TestGit) Clone(gitUrl string, path string) (string, error) {
+	g.DidClone = true
+	return "stdout", nil
+}
+
+func (g *TestGit) Pull(destinationDir string) (string, error) {
+	g.DidPull = true
+	return "stdout", nil
 }
