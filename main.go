@@ -109,7 +109,7 @@ func performGitActions(action lib.Action, gc git.GitApi) (lib.Task, error) {
 	case lib.Pull:
 		output, err = gc.Pull(action.Path)
 	default:
-		panic(fmt.Sprintf("Unexpected task: %v", action.Task.String()))
+		err = fmt.Errorf("unexpected task: %v", action.Task.String())
 	}
 	if err != nil {
 		return lib.Invalid, err
