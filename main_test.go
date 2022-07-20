@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"grayson/cct/lib"
 	githubapi "grayson/cct/lib/GithubApi"
+	"grayson/cct/lib/either"
 	"grayson/cct/lib/fs"
 	"reflect"
 	"testing"
@@ -148,6 +150,7 @@ func Test_performGitActions(t *testing.T) {
 }
 
 func Test_fetchRepoInformation(t *testing.T) {
+	success := &TestApi{Response: &githubapi.GithubOrgReposResponse{}}
 	type args struct {
 		client githubapi.GithubApi
 		url    string
@@ -158,7 +161,24 @@ func Test_fetchRepoInformation(t *testing.T) {
 		want    *githubapi.GithubOrgReposResponse
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			"Produces error result in case of local error",
+			args{&TestApi{Error: fmt.Errorf("err")}, "url"},
+			nil,
+			true,
+		},
+		{
+			"Produces error in case of Github Error Message",
+			args{&TestApi{ErrorResponse: &githubapi.GithubOrgReposErrorResponse{}}, "url"},
+			nil,
+			true,
+		},
+		{
+			"Produces value in case of success",
+			args{success, "url"},
+			success.Response,
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -304,4 +324,22 @@ func (g *TestGit) Clone(gitUrl string, path string) (string, error) {
 func (g *TestGit) Pull(destinationDir string) (string, error) {
 	g.DidPull = true
 	return "stdout", nil
+}
+
+type TestApi struct {
+	Error         error
+	ErrorResponse *githubapi.GithubOrgReposErrorResponse
+	Response      *githubapi.GithubOrgReposResponse
+}
+
+func (api *TestApi) FetchOrgInformation(url string) (*either.Either[*githubapi.GithubOrgReposResponse, *githubapi.GithubOrgReposErrorResponse], error) {
+	of := either.Of[*githubapi.GithubOrgReposResponse, *githubapi.GithubOrgReposErrorResponse]
+
+	if api.Error != nil {
+		return nil, api.Error
+	}
+	if api.ErrorResponse != nil {
+		return of(api.ErrorResponse), nil
+	}
+	return of(api.Response), nil
 }
