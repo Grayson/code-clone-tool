@@ -9,8 +9,10 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"grayson/cct/lib"
-	githubclient "grayson/cct/lib/GitApi"
+	git "grayson/cct/lib/GitApi"
 	githubapi "grayson/cct/lib/GithubApi"
+	"grayson/cct/lib/fs"
+	"grayson/cct/lib/stage"
 )
 
 func main() {
@@ -50,46 +52,88 @@ func main() {
 }
 
 func run(env *lib.Env) error {
-	if err := os.Chdir(env.WorkingDirectory); err != nil {
-		return err
+	gc := git.CreateGitClient(log.Default())
+
+	start := stage.Start(func() (bool, error) { return cwd(fs.OsFs{}, env.WorkingDirectory) })
+	repos := stage.Then(
+		start,
+		func(bool) (*githubapi.GithubOrgReposResponse, error) {
+			client := githubapi.NewClient(http.DefaultClient, env.PersonalAccessToken)
+			return fetchRepoInformation(client, env.ApiUrl)
+		},
+	)
+	actions := stage.Then(
+		repos,
+		mapActions,
+	)
+	performedTasks := stage.Iterate(
+		actions,
+		func(a lib.Action) (lib.Task, error) {
+			return performGitActions(a, gc)
+		},
+	)
+	counts := stage.Then(
+		performedTasks,
+		countTasks,
+	)
+	log.Println()
+	_, err := stage.Finally(
+		counts,
+		func(m map[lib.Task]int) (bool, error) {
+			for k, v := range m {
+				log.Printf("%v: %v", k, v)
+				log.Println()
+			}
+			return true, nil
+		},
+	)
+	return err
+}
+
+func countTasks(tasks []lib.Task) (map[lib.Task]int, error) {
+	m := make(map[lib.Task]int)
+	for _, t := range tasks {
+		v := m[t]
+		m[t] = v + 1
 	}
+	return m, nil
+}
 
-	client := githubapi.NewClient(http.DefaultClient, env.PersonalAccessToken)
-	resp, err := client.FetchOrgInformation(env.ApiUrl)
-
+func performGitActions(action lib.Action, gc git.GitApi) (lib.Task, error) {
+	var output string
+	var err error
+	task := action.Task
+	switch action.Task {
+	case lib.Clone:
+		output, err = gc.Clone(action.GitUrl, action.Path)
+	case lib.Pull:
+		output, err = gc.Pull(action.Path)
+	default:
+		panic(fmt.Sprintf("Unexpected task: %v", action.Task.String()))
+	}
 	if err != nil {
-		return err
+		return lib.Invalid, err
+	}
+	log.Print(output)
+	return task, nil
+}
+
+func fetchRepoInformation(client githubapi.GithubApi, url string) (*githubapi.GithubOrgReposResponse, error) {
+	resp, err := client.FetchOrgInformation(url)
+	if err != nil {
+		return nil, err
 	}
 
 	if errResp, ok := resp.GetRight(); ok {
-		return fmt.Errorf("service error with the following message:\n%v\n\n%v", errResp.Message, errResp.DocumentationURL)
+		return nil, fmt.Errorf("service error with the following message:\n%v\n\n%v", errResp.Message, errResp.DocumentationURL)
 	}
-
 	repos, _ := resp.GetLeft()
-	gc := githubclient.CreateGitClient(log.Default())
-	cloneCount, pullCount := 0, 0
-	for _, action := range mapActions(repos) {
-		var output string
-		var err error
-		switch action.Task {
-		case lib.Clone:
-			output, err = gc.Clone(action.GitUrl, action.Path)
-			cloneCount++
-		case lib.Pull:
-			output, err = gc.Pull(action.Path)
-			pullCount++
-		default:
-			panic(fmt.Sprintf("Unexpected task: %v", action.Task.String()))
-		}
-		if err != nil {
-			return err
-		}
-		log.Print(output)
-	}
+	return repos, nil
+}
 
-	log.Println()
-	log.Println("Pulled:", pullCount, "Cloned:", cloneCount)
-	return nil
+func cwd(f fs.Fs, p string) (bool, error) {
+	err := f.ChangeWorkingDirectory(p)
+	return err == nil, err
 }
 
 func loadEnv() *lib.Env {
@@ -114,7 +158,7 @@ func mergeEnvs(change *lib.Env, into *lib.Env) *lib.Env {
 	return into
 }
 
-func mapActions(repos *githubapi.GithubOrgReposResponse) (actions []lib.Action) {
+func mapActions(repos *githubapi.GithubOrgReposResponse) (actions []lib.Action, err error) {
 	for _, repo := range *repos {
 		action := lib.Action{
 			Task:   lib.DiscernTask(repo.FullName, discernPathInfo),
