@@ -19,7 +19,42 @@ func Test_countTasks(t *testing.T) {
 		want    map[lib.Task]int
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			"Test 1 clone",
+			args{[]lib.Task{lib.Clone}},
+			map[lib.Task]int{lib.Clone: 1},
+			false,
+		},
+		{
+			"Test 1 pull",
+			args{[]lib.Task{lib.Pull}},
+			map[lib.Task]int{lib.Pull: 1},
+			false,
+		},
+		{
+			"Test 1 pull and 1 clone",
+			args{[]lib.Task{lib.Pull, lib.Clone}},
+			map[lib.Task]int{lib.Pull: 1, lib.Clone: 1},
+			false,
+		},
+		{
+			"Test 1 pull and 2 clone",
+			args{[]lib.Task{lib.Pull, lib.Clone, lib.Clone}},
+			map[lib.Task]int{lib.Pull: 1, lib.Clone: 2},
+			false,
+		},
+		{
+			"Test invalid case",
+			args{[]lib.Task{lib.Invalid}},
+			map[lib.Task]int{lib.Invalid: 1},
+			false,
+		},
+		{
+			"Test 1 unknown case",
+			args{[]lib.Task{lib.Unknown}},
+			map[lib.Task]int{lib.Unknown: 1},
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
