@@ -311,6 +311,7 @@ func Test_mergeEnvs(t *testing.T) {
 
 func Test_mapActions(t *testing.T) {
 	type args struct {
+		fs    fs.Fs
 		repos *githubapi.GithubOrgReposResponse
 	}
 	tests := []struct {
@@ -319,11 +320,42 @@ func Test_mapActions(t *testing.T) {
 		wantActions []lib.Action
 		wantErr     bool
 	}{
-		// TODO: Add test cases.
+		{
+			"Test",
+			args{
+				&TestFs{
+					FileInfo: map[string]TestFsInfo{
+						"clone": {fs.DoesNotExist, fs.None},
+						"pull":  {fs.Exists, fs.IsDirectory},
+						"file":  {fs.Exists, fs.IsFile},
+					},
+				},
+				&githubapi.GithubOrgReposResponse{
+					{
+						FullName: "clone",
+						SshUrl:   "ssh",
+					},
+					{
+						FullName: "pull",
+						SshUrl:   "ssh",
+					},
+					{
+						FullName: "file",
+						SshUrl:   "ssh",
+					},
+				},
+			},
+			[]lib.Action{
+				{Task: lib.Clone, Path: "clone", GitUrl: "ssh"},
+				{Task: lib.Pull, Path: "pull", GitUrl: "ssh"},
+				{Task: lib.Invalid, Path: "file", GitUrl: "ssh"},
+			},
+			false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotActions, err := mapActions(tt.args.repos)
+			gotActions, err := mapActions(tt.args.fs, tt.args.repos)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("mapActions() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -370,10 +402,21 @@ func (api *TestApi) FetchOrgInformation(url string) (*either.Either[*githubapi.G
 	return of(api.Response), nil
 }
 
+type TestFsInfo struct {
+	E fs.PathExistential
+	T fs.PathType
+}
+
 type TestFs struct {
-	Error error
+	Error    error
+	FileInfo map[string]TestFsInfo
 }
 
 func (f *TestFs) ChangeWorkingDirectory(_ string) error {
 	return f.Error
+}
+
+func (f *TestFs) Info(path string) (fs.PathExistential, fs.PathType) {
+	x := f.FileInfo[path]
+	return x.E, x.T
 }
