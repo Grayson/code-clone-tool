@@ -205,7 +205,18 @@ func Test_cwd(t *testing.T) {
 		want    bool
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			"No error",
+			args{&TestFs{}, "path"},
+			true,
+			false,
+		},
+		{
+			"Error",
+			args{&TestFs{Error: fmt.Errorf("err")}, "path"},
+			false,
+			true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -342,4 +353,12 @@ func (api *TestApi) FetchOrgInformation(url string) (*either.Either[*githubapi.G
 		return of(api.ErrorResponse), nil
 	}
 	return of(api.Response), nil
+}
+
+type TestFs struct {
+	Error error
+}
+
+func (f *TestFs) ChangeWorkingDirectory(_ string) error {
+	return f.Error
 }
