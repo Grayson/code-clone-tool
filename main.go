@@ -146,6 +146,14 @@ func loadEnv() *lib.Env {
 }
 
 func mergeEnvs(change *lib.Env, into *lib.Env) *lib.Env {
+	if change == nil {
+		return into
+	}
+
+	if into == nil {
+		return change
+	}
+
 	if change.ApiUrl != "" {
 		into.ApiUrl = change.ApiUrl
 	}
