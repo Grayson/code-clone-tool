@@ -41,8 +41,8 @@ func (act *Action) Execute() *optional.Optional[*error] {
 
 type DiscernPathInfo func(path string) (fs.PathExistential, fs.PathType)
 
-func DiscernTask(path string, fs fs.Fs) Task {
-	existence, pathType := fs.Info(path)
+func DiscernTask(path string, fsimpl fs.Fs) Task {
+	existence, pathType := fsimpl.Info(path)
 	switch existence {
 	case fs.DoesNotExist:
 		return Clone
