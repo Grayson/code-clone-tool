@@ -18,7 +18,7 @@ func TestEmptyPATWhenEnvironmentGetterReturnsEmptyValue(t *testing.T) {
 func TestValidPATFromEnvVarGetterFunction(t *testing.T) {
 	expect := "PAT"
 	envMap := map[string]string{
-		"GH_PERSONAL_ACCESS_TOKEN": expect,
+		"PERSONAL_ACCESS_TOKEN": expect,
 	}
 	get := func(key string) (string, bool) {
 		val, ok := envMap[key]
@@ -54,7 +54,7 @@ func TestEnvVarOverridingEnvFile(t *testing.T) {
 		yaml   = `---
 personal_access_token: NOT_PAT`
 	)
-	envMap := map[string]string{"GH_PERSONAL_ACCESS_TOKEN": expect}
+	envMap := map[string]string{"PERSONAL_ACCESS_TOKEN": expect}
 	get := func(key string) (string, bool) {
 		val, ok := envMap[key]
 		return val, ok
