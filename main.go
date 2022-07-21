@@ -53,8 +53,9 @@ func main() {
 
 func run(env *lib.Env) error {
 	gc := git.CreateGitClient(log.Default())
+	fs := fs.OsFs{}
 
-	start := stage.Start(func() (bool, error) { return cwd(fs.OsFs{}, env.WorkingDirectory) })
+	start := stage.Start(func() (bool, error) { return cwd(fs, env.WorkingDirectory) })
 	repos := stage.Then(
 		start,
 		func(bool) (*githubapi.GithubOrgReposResponse, error) {
@@ -64,7 +65,9 @@ func run(env *lib.Env) error {
 	)
 	actions := stage.Then(
 		repos,
-		mapActions,
+		func(repos *githubapi.GithubOrgReposResponse) (actions []lib.Action, err error) {
+			return mapActions(fs, repos)
+		},
 	)
 	performedTasks := stage.Iterate(
 		actions,
@@ -109,7 +112,7 @@ func performGitActions(action lib.Action, gc git.GitApi) (lib.Task, error) {
 	case lib.Pull:
 		output, err = gc.Pull(action.Path)
 	default:
-		panic(fmt.Sprintf("Unexpected task: %v", action.Task.String()))
+		err = fmt.Errorf("unexpected task: %v", action.Task.String())
 	}
 	if err != nil {
 		return lib.Invalid, err
@@ -146,6 +149,14 @@ func loadEnv() *lib.Env {
 }
 
 func mergeEnvs(change *lib.Env, into *lib.Env) *lib.Env {
+	if change == nil {
+		return into
+	}
+
+	if into == nil {
+		return change
+	}
+
 	if change.ApiUrl != "" {
 		into.ApiUrl = change.ApiUrl
 	}
@@ -158,26 +169,14 @@ func mergeEnvs(change *lib.Env, into *lib.Env) *lib.Env {
 	return into
 }
 
-func mapActions(repos *githubapi.GithubOrgReposResponse) (actions []lib.Action, err error) {
+func mapActions(fs fs.Fs, repos *githubapi.GithubOrgReposResponse) (actions []lib.Action, err error) {
 	for _, repo := range *repos {
 		action := lib.Action{
-			Task:   lib.DiscernTask(repo.FullName, discernPathInfo),
+			Task:   lib.DiscernTask(repo.FullName, fs),
 			Path:   repo.FullName,
 			GitUrl: repo.SshUrl,
 		}
 		actions = append(actions, action)
 	}
 	return
-}
-
-func discernPathInfo(path string) (lib.PathExistential, lib.PathType) {
-	info, err := os.Stat(path)
-	if err != nil && os.IsNotExist(err) {
-		return lib.DoesNotExist, lib.None
-	}
-
-	if info.IsDir() {
-		return lib.Exists, lib.IsDirectory
-	}
-	return lib.Exists, lib.IsFile
 }

@@ -2,6 +2,7 @@ package lib
 
 import (
 	"fmt"
+	"grayson/cct/lib/fs"
 	"grayson/cct/lib/optional"
 )
 
@@ -38,30 +39,15 @@ func (act *Action) Execute() *optional.Optional[*error] {
 	panic("Unimplemented")
 }
 
-type PathExistential int
+type DiscernPathInfo func(path string) (fs.PathExistential, fs.PathType)
 
-const (
-	Exists PathExistential = iota
-	DoesNotExist
-)
-
-type PathType int
-
-const (
-	None PathType = iota
-	IsFile
-	IsDirectory
-)
-
-type DiscernPathInfo func(path string) (PathExistential, PathType)
-
-func DiscernTask(path string, infoDiscerner DiscernPathInfo) Task {
-	existence, pathType := infoDiscerner(path)
+func DiscernTask(path string, fsimpl fs.Fs) Task {
+	existence, pathType := fsimpl.Info(path)
 	switch existence {
-	case DoesNotExist:
+	case fs.DoesNotExist:
 		return Clone
-	case Exists:
-		if IsDirectory == pathType {
+	case fs.Exists:
+		if fs.IsDirectory == pathType {
 			return Pull
 		}
 	}
