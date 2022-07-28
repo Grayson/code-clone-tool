@@ -128,3 +128,64 @@ func Test_loadEnvironmentVariables(t *testing.T) {
 		})
 	}
 }
+
+func TestEnv_Merge(t *testing.T) {
+	left := lib.Env{
+		ApiUrl:              "apiurl",
+		PersonalAccessToken: "pat",
+		WorkingDirectory:    "wd",
+	}
+	right := lib.Env{
+		ApiUrl:              "rurl",
+		PersonalAccessToken: "rat",
+		WorkingDirectory:    "rd",
+	}
+	empty := lib.Env{
+		ApiUrl:              "",
+		PersonalAccessToken: "",
+		WorkingDirectory:    "",
+	}
+
+	type args struct {
+		left  *lib.Env
+		right *lib.Env
+	}
+	tests := []struct {
+		name string
+		args args
+		want *lib.Env
+	}{
+		{
+			"Choose left (nil right)",
+			args{&left, nil},
+			&left,
+		},
+		{
+			"Choose left (empty right)",
+			args{&left, &empty},
+			&left,
+		},
+		{
+			"Choose right (nil left)",
+			args{nil, &right},
+			&right,
+		},
+		{
+			"Choose right (empty left)",
+			args{&empty, &right},
+			&right,
+		},
+		{
+			"Choose right (full left)",
+			args{&left, &right},
+			&right,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.args.left.Merge(tt.args.right); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("Env.Merge() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

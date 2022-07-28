@@ -64,6 +64,29 @@ func LoadEnvironmentVariables(get GetEnvVar) *Env {
 	return &env
 }
 
+func (left *Env) Merge(right *Env) *Env {
+	if left == nil {
+		return right
+	}
+
+	combined := *left
+
+	if right == nil {
+		return &combined
+	}
+
+	rvalue := reflect.ValueOf(right).Elem()
+	rcombined := reflect.ValueOf(&combined).Elem()
+	fieldCount := rvalue.NumField()
+	for fieldIndex := 0; fieldIndex < fieldCount; fieldIndex++ {
+		field := rvalue.Field(fieldIndex)
+		if value := field.String(); value != "" {
+			rcombined.Field(fieldIndex).SetString(value)
+		}
+	}
+	return &combined
+}
+
 func (e *envFileWrapper) lookup(key EnvironmentVariableKey) string {
 	switch key {
 	case PersonalAccessToken:
