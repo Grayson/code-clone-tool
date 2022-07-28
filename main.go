@@ -49,8 +49,15 @@ func main() {
 			},
 		},
 		Action: func(*cli.Context) error {
-			config := determineConfigPath(cliFlagConfigPath, func() (string, bool) { return os.LookupEnv("CONFIG_PATH") })
-			return run(flagsEnv.Merge(loadEnv(config)))
+			fileconfigPath := determineConfigPath(cliFlagConfigPath, func() (string, bool) {
+				return os.LookupEnv("CONFIG_PATH")
+			})
+			fileconfig := lib.LoadEnvironmentYamlFile(func() ([]byte, error) {
+				return os.ReadFile(fileconfigPath)
+			})
+			envconfig := lib.LoadEnvironmentVariables(os.LookupEnv)
+			config := flagsEnv.Merge(fileconfig).Merge(envconfig)
+			return run(config)
 		},
 	}
 
@@ -157,15 +164,6 @@ func fetchRepoInformation(client githubapi.GithubApi, url string) (*githubapi.Gi
 func cwd(f fs.Fs, p string) (bool, error) {
 	err := f.ChangeWorkingDirectory(p)
 	return err == nil, err
-}
-
-func loadEnv(path string) *lib.Env {
-	readers := []lib.ReadYamlFile{
-		func() ([]byte, error) {
-			return os.ReadFile(path)
-		},
-	}
-	return lib.NewEnv(os.LookupEnv, readers)
 }
 
 func mapActions(fs fs.Fs, repos *githubapi.GithubOrgReposResponse) (actions []lib.Action, err error) {

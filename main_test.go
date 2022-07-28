@@ -232,22 +232,6 @@ func Test_cwd(t *testing.T) {
 	}
 }
 
-func Test_loadEnv(t *testing.T) {
-	tests := []struct {
-		name string
-		want *lib.Env
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := loadEnv(".env"); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("loadEnv() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func Test_mapActions(t *testing.T) {
 	type args struct {
 		fs    fs.Fs
