@@ -169,6 +169,9 @@ func fetchRepoInformation(client githubapi.GithubApi, url string) (*githubapi.Gi
 }
 
 func cwd(f fs.Fs, p string) (bool, error) {
+	if p == "" {
+		return true, nil
+	}
 	err := f.ChangeWorkingDirectory(p)
 	return err == nil, err
 }
