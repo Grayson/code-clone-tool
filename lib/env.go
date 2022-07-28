@@ -2,14 +2,16 @@ package lib
 
 import (
 	"fmt"
+	"reflect"
 
 	"gopkg.in/yaml.v3"
 )
 
 type Env struct {
-	PersonalAccessToken string
-	ApiUrl              string
-	WorkingDirectory    string
+	PersonalAccessToken string     `env:"PERSONAL_ACCESS_TOKEN"`
+	ApiUrl              string     `env:"API_URL"`
+	WorkingDirectory    string     `env:"WORKING_DIRECTORY"`
+	IsMirror            BoolString `env:"IS_MIRROR"`
 }
 
 type GetEnvVar func(string) (string, bool)
@@ -43,6 +45,24 @@ const (
 	Loaded
 	FailedToLoad
 )
+
+func LoadEnvironmentVariables(get GetEnvVar) *Env {
+	env := Env{}
+	rtype := reflect.TypeOf(env)
+	relem := reflect.ValueOf(&env).Elem()
+	fieldCount := rtype.NumField()
+	for fieldIndex := 0; fieldIndex < fieldCount; fieldIndex++ {
+		field := rtype.Field(fieldIndex)
+		envKey := field.Tag.Get("env")
+		if envKey == "" {
+			continue
+		}
+		if x, ok := get(field.Tag.Get("env")); ok {
+			relem.FieldByIndex(field.Index).SetString(x)
+		}
+	}
+	return &env
+}
 
 func (e *envFileWrapper) lookup(key EnvironmentVariableKey) string {
 	switch key {

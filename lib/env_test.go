@@ -2,6 +2,7 @@ package lib_test
 
 import (
 	"grayson/cct/lib"
+	"reflect"
 	"testing"
 )
 
@@ -66,5 +67,64 @@ personal_access_token: NOT_PAT`
 	env := lib.NewEnv(get, []lib.ReadYamlFile{reader})
 	if env.PersonalAccessToken != expect {
 		t.Errorf("Receive unexpected personal access token (received: %v, expected: %v)", env.PersonalAccessToken, expect)
+	}
+}
+
+func Test_loadEnvironmentVariables(t *testing.T) {
+	genget := func(m map[string]string) func(string) (string, bool) {
+		return func(k string) (string, bool) {
+			v, ok := m[k]
+			return v, ok
+		}
+	}
+
+	type args struct {
+		get lib.GetEnvVar
+	}
+	tests := []struct {
+		name string
+		args args
+		want *lib.Env
+	}{
+		{
+			"Load all environment variables",
+			args{genget(map[string]string{
+				"PERSONAL_ACCESS_TOKEN": "pat",
+				"API_URL":               "url",
+				"WORKING_DIRECTORY":     "wd",
+				"IS_MIRROR":             "true",
+			}),
+			},
+			&lib.Env{
+				PersonalAccessToken: "pat",
+				ApiUrl:              "url",
+				WorkingDirectory:    "wd",
+				IsMirror:            "true",
+			},
+		},
+		{
+			"Load some environment variables",
+			args{genget(map[string]string{
+				"PERSONAL_ACCESS_TOKEN": "pat",
+				"API_URL":               "url",
+			}),
+			},
+			&lib.Env{
+				PersonalAccessToken: "pat",
+				ApiUrl:              "url",
+			},
+		},
+		{
+			"Load no environment variables",
+			args{genget(map[string]string{})},
+			&lib.Env{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := lib.LoadEnvironmentVariables(tt.args.get); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("loadEnvironmentVariables() = %v, want %v", got, tt.want)
+			}
+		})
 	}
 }
