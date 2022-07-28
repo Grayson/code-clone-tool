@@ -67,7 +67,7 @@ func main() {
 }
 
 func run(env *lib.Env) error {
-	gc := git.CreateGitClient(log.Default())
+	gc := determineGitClient(env.IsMirror.IsTruthy())
 	fs := fs.OsFs{}
 
 	start := stage.Start(func() (bool, error) { return cwd(fs, env.WorkingDirectory) })
@@ -106,6 +106,13 @@ func run(env *lib.Env) error {
 		},
 	)
 	return err
+}
+
+func determineGitClient(isMirror bool) git.GitApi {
+	if isMirror {
+		return git.CreateMirrorClient(log.Default())
+	}
+	return git.CreateGitClient(log.Default())
 }
 
 func determineConfigPath(initial string, fallback func() (string, bool)) string {
@@ -162,6 +169,9 @@ func fetchRepoInformation(client githubapi.GithubApi, url string) (*githubapi.Gi
 }
 
 func cwd(f fs.Fs, p string) (bool, error) {
+	if p == "" {
+		return true, nil
+	}
 	err := f.ChangeWorkingDirectory(p)
 	return err == nil, err
 }
