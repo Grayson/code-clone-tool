@@ -189,3 +189,54 @@ func TestEnv_Merge(t *testing.T) {
 		})
 	}
 }
+
+func TestLoadEnvironmentYamlFile(t *testing.T) {
+	y := func(yaml string) func() ([]byte, error) {
+		return func() ([]byte, error) { return []byte(yaml), nil }
+	}
+	type args struct {
+		read lib.ReadYamlFile
+	}
+	tests := []struct {
+		name string
+		args args
+		want *lib.Env
+	}{
+		{
+			"Load all items",
+			args{y(`---
+personal_access_token: pat
+api_url: url
+working_directory: wd
+is_mirror: true`)},
+			&lib.Env{
+				PersonalAccessToken: "pat",
+				ApiUrl:              "url",
+				WorkingDirectory:    "wd",
+				IsMirror:            "true",
+			},
+		},
+		{
+			"Load some items",
+			args{y(`---
+personal_access_token: pat
+api_url: url`)},
+			&lib.Env{
+				PersonalAccessToken: "pat",
+				ApiUrl:              "url",
+			},
+		},
+		{
+			"Load no items",
+			args{y("")},
+			&lib.Env{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := lib.LoadEnvironmentYamlFile(tt.args.read); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("LoadEnvironmentYamlFile() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

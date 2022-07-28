@@ -8,10 +8,10 @@ import (
 )
 
 type Env struct {
-	PersonalAccessToken string     `env:"PERSONAL_ACCESS_TOKEN"`
-	ApiUrl              string     `env:"API_URL"`
-	WorkingDirectory    string     `env:"WORKING_DIRECTORY"`
-	IsMirror            BoolString `env:"IS_MIRROR"`
+	PersonalAccessToken string     `env:"PERSONAL_ACCESS_TOKEN" yaml:"personal_access_token"`
+	ApiUrl              string     `env:"API_URL" yaml:"api_url"`
+	WorkingDirectory    string     `env:"WORKING_DIRECTORY" yaml:"working_directory"`
+	IsMirror            BoolString `env:"IS_MIRROR" yaml:"is_mirror"`
 }
 
 type GetEnvVar func(string) (string, bool)
@@ -60,6 +60,18 @@ func LoadEnvironmentVariables(get GetEnvVar) *Env {
 		if x, ok := get(field.Tag.Get("env")); ok {
 			relem.FieldByIndex(field.Index).SetString(x)
 		}
+	}
+	return &env
+}
+
+func LoadEnvironmentYamlFile(read ReadYamlFile) *Env {
+	var env Env
+	bytes, err := read()
+	if err != nil {
+		return nil
+	}
+	if err := yaml.Unmarshal(bytes, &env); err != nil {
+		return nil
 	}
 	return &env
 }
