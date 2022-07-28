@@ -53,8 +53,18 @@ string values.  Finally, there are command line options that will override both
 |`PERSONAL_ACCESS_TOKEN`|`personal_access_token`|`personalaccesstoken`, `t`   |
 |`API_URL`              |`api_url`              |`url`, `u`                   |
 |`WORKING_DIRECTORY`    |`working_directory`    |`workingdirectory`, `wd`, `d`|
+|`CONFIG_PATH`          |n/a                    |`config`, `c`                |
 
 The access token and url were discussed above.  The working directory allows you
 to specify a relative or absolute path to use as the working directory.  The
 tool will set it as the root from which clones and pulls are subsequently
 executed.
+
+There is one flag that cannot be set by the config file (default `.env`).
+That's the `--config` CLI flag (`CONFIG_PATH` environment variable).  This
+allows you to specify a config file location.  One expected use case is for
+users that want to have a single root directory (e.g. `/code`) that contains
+cloned repositories across multiple organizations or accounts without extraneous
+intermediary directories that contain `.env` files.  This should also allow for
+simpler shell aliases by moving configuration into files rather than repeating
+command line arguments or environment flags.
