@@ -248,67 +248,6 @@ func Test_loadEnv(t *testing.T) {
 	}
 }
 
-func Test_mergeEnvs(t *testing.T) {
-	left := lib.Env{
-		ApiUrl:              "apiurl",
-		PersonalAccessToken: "pat",
-		WorkingDirectory:    "wd",
-	}
-	right := lib.Env{
-		ApiUrl:              "rurl",
-		PersonalAccessToken: "rat",
-		WorkingDirectory:    "rd",
-	}
-	empty := lib.Env{
-		ApiUrl:              "",
-		PersonalAccessToken: "",
-		WorkingDirectory:    "",
-	}
-
-	type args struct {
-		change *lib.Env
-		into   *lib.Env
-	}
-	tests := []struct {
-		name string
-		args args
-		want *lib.Env
-	}{
-		{
-			"Choose left (nil right)",
-			args{&left, nil},
-			&left,
-		},
-		{
-			"Choose left (empty right)",
-			args{&left, &empty},
-			&left,
-		},
-		{
-			"Choose right (nil left)",
-			args{nil, &right},
-			&right,
-		},
-		{
-			"Choose right (empty left)",
-			args{&empty, &right},
-			&right,
-		},
-		{
-			"Choose right (full left)",
-			args{&left, &right},
-			&right,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := mergeEnvs(tt.args.change, tt.args.into); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("mergeEnvs() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func Test_mapActions(t *testing.T) {
 	type args struct {
 		fs    fs.Fs
