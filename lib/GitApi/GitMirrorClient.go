@@ -24,5 +24,5 @@ func (g *GitMirrorClient) Clone(gitUrl string, path string) (string, error) {
 func (g *GitMirrorClient) Pull(destinationDir string) (string, error) {
 	g.log.Printf("Executing `git remote update` in %v", destinationDir)
 	g.log.Println()
-	return shell.In(destinationDir).Do("git", "remote", "--update")
+	return shell.In(destinationDir).Do("git", "remote", "update")
 }
