@@ -22,5 +22,5 @@ func (gc *GitClient) Clone(gitUrl string, path string) (string, error) {
 
 func (gc *GitClient) Pull(destinationDir string) (string, error) {
 	gc.log.Println("Executing `git pull` in", destinationDir)
-	return shell.Do("git", "pull")
+	return shell.In(destinationDir).Do("git", "pull")
 }
