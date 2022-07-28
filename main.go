@@ -17,6 +17,7 @@ import (
 
 func main() {
 	flagsEnv := lib.Env{}
+	cliFlagConfigPath := ""
 
 	app := &cli.App{
 		Name:  "code-clone-tool",
@@ -40,9 +41,16 @@ func main() {
 				Aliases:     []string{"dir", "wd"},
 				Destination: &flagsEnv.WorkingDirectory,
 			},
+			&cli.StringFlag{
+				Name:        "config",
+				Usage:       "Select config file to load (default `.env`)",
+				Aliases:     []string{"c"},
+				Destination: &cliFlagConfigPath,
+			},
 		},
 		Action: func(*cli.Context) error {
-			return run(mergeEnvs(&flagsEnv, loadEnv()))
+			config := determineConfigPath(cliFlagConfigPath, func() (string, bool) { return os.LookupEnv("CONFIG_PATH") })
+			return run(mergeEnvs(&flagsEnv, loadEnv(config)))
 		},
 	}
 
@@ -93,6 +101,18 @@ func run(env *lib.Env) error {
 	return err
 }
 
+func determineConfigPath(initial string, fallback func() (string, bool)) string {
+	if initial != "" {
+		return initial
+	}
+
+	if fb, ok := fallback(); ok {
+		return fb
+	}
+
+	return ".env"
+}
+
 func countTasks(tasks []lib.Task) (map[lib.Task]int, error) {
 	m := make(map[lib.Task]int)
 	for _, t := range tasks {
@@ -139,10 +159,10 @@ func cwd(f fs.Fs, p string) (bool, error) {
 	return err == nil, err
 }
 
-func loadEnv() *lib.Env {
+func loadEnv(path string) *lib.Env {
 	readers := []lib.ReadYamlFile{
 		func() ([]byte, error) {
-			return os.ReadFile(".env")
+			return os.ReadFile(path)
 		},
 	}
 	return lib.NewEnv(os.LookupEnv, readers)

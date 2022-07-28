@@ -241,7 +241,7 @@ func Test_loadEnv(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := loadEnv(); !reflect.DeepEqual(got, tt.want) {
+			if got := loadEnv(".env"); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("loadEnv() = %v, want %v", got, tt.want)
 			}
 		})
@@ -362,6 +362,46 @@ func Test_mapActions(t *testing.T) {
 			}
 			if !reflect.DeepEqual(gotActions, tt.wantActions) {
 				t.Errorf("mapActions() = %v, want %v", gotActions, tt.wantActions)
+			}
+		})
+	}
+}
+
+func Test_determineConfigPath(t *testing.T) {
+	type args struct {
+		initial  string
+		fallback func() (string, bool)
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "Empty initial and no env var lookup",
+			args: args{"", func() (string, bool) { return "", false }},
+			want: ".env",
+		},
+		{
+			name: "Filled initial and no env var lookup",
+			args: args{"initial", func() (string, bool) { return "", false }},
+			want: "initial",
+		},
+		{
+			name: "Filled initial and valid env var lookup",
+			args: args{"initial", func() (string, bool) { return "env", true }},
+			want: "initial",
+		},
+		{
+			name: "Empty initial and valid env var lookup",
+			args: args{"", func() (string, bool) { return "env", true }},
+			want: "env",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := determineConfigPath(tt.args.initial, tt.args.fallback); got != tt.want {
+				t.Errorf("determineConfigPath() = %v, want %v", got, tt.want)
 			}
 		})
 	}
