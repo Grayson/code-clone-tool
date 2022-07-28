@@ -9,6 +9,12 @@ type GitMirrorClient struct {
 	log *log.Logger
 }
 
+func CreateMirrorClient(log *log.Logger) GitApi {
+	return &GitMirrorClient{
+		log,
+	}
+}
+
 func (g *GitMirrorClient) Clone(gitUrl string, path string) (string, error) {
 	g.log.Printf("Executing `git clone --mirror %v %v`", gitUrl, path)
 	g.log.Println()
