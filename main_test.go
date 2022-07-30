@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"grayson/cct/lib"
-	githubapi "grayson/cct/lib/GithubApi"
-	"grayson/cct/lib/either"
-	"grayson/cct/lib/fs"
 	"reflect"
 	"testing"
+
+	"github.com/Grayson/code-clone-tool/lib"
+	githubapi "github.com/Grayson/code-clone-tool/lib/GithubApi"
+	"github.com/Grayson/code-clone-tool/lib/either"
+	"github.com/Grayson/code-clone-tool/lib/fs"
 )
 
 func Test_countTasks(t *testing.T) {

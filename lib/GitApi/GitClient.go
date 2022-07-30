@@ -1,8 +1,9 @@
 package git
 
 import (
-	"grayson/cct/lib/shell"
 	"log"
+
+	"github.com/Grayson/code-clone-tool/lib/shell"
 )
 
 type GitClient struct {

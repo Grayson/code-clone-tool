@@ -1,8 +1,9 @@
 package optional_test
 
 import (
-	"grayson/cct/lib/optional"
 	"testing"
+
+	"github.com/Grayson/code-clone-tool/lib/optional"
 )
 
 func TestEmpty(t *testing.T) {

@@ -1,4 +1,4 @@
-module grayson/cct
+module github.com/Grayson/code-clone-tool
 
 go 1.18
 

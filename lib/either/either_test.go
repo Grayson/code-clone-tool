@@ -1,8 +1,9 @@
 package either_test
 
 import (
-	"grayson/cct/lib/either"
 	"testing"
+
+	"github.com/Grayson/code-clone-tool/lib/either"
 )
 
 func TestBasicOfCreation(t *testing.T) {

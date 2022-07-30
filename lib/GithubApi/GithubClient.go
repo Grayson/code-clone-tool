@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 
-	"grayson/cct/lib/either"
+	"github.com/Grayson/code-clone-tool/lib/either"
 )
 
 type GithubClient struct {

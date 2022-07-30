@@ -2,8 +2,9 @@ package lib
 
 import (
 	"fmt"
-	"grayson/cct/lib/fs"
-	"grayson/cct/lib/optional"
+
+	"github.com/Grayson/code-clone-tool/lib/fs"
+	"github.com/Grayson/code-clone-tool/lib/optional"
 )
 
 type Task int
