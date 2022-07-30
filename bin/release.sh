@@ -41,8 +41,8 @@ main() {
 		--annotate "$RELEASE_TAG" \
 		--message "Release $RELEASE_TAG"
 	git push origin "$RELEASE_TAG"
-	
-	goreleaser release
+
+	goreleaser release --rm-dist
 }
 
 main "$@"
