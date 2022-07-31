@@ -3,7 +3,7 @@ package either_test
 import (
 	"testing"
 
-	"github.com/Grayson/code-clone-tool/lib/either"
+	"github.com/grayson/code-clone-tool/lib/either"
 )
 
 func TestBasicOfCreation(t *testing.T) {

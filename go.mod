@@ -1,4 +1,4 @@
-module github.com/Grayson/code-clone-tool
+module github.com/grayson/code-clone-tool
 
 go 1.18
 
@@ -13,4 +13,4 @@ require (
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 )
 
-retract [v0.0.1, v0.0.2]
+retract [v0.0.1, v0.0.3]

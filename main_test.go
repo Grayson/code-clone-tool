@@ -5,10 +5,10 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Grayson/code-clone-tool/lib"
-	githubapi "github.com/Grayson/code-clone-tool/lib/GithubApi"
-	"github.com/Grayson/code-clone-tool/lib/either"
-	"github.com/Grayson/code-clone-tool/lib/fs"
+	"github.com/grayson/code-clone-tool/lib"
+	githubapi "github.com/grayson/code-clone-tool/lib/GithubApi"
+	"github.com/grayson/code-clone-tool/lib/either"
+	"github.com/grayson/code-clone-tool/lib/fs"
 )
 
 func Test_countTasks(t *testing.T) {

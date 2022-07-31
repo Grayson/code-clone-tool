@@ -3,7 +3,7 @@ package git
 import (
 	"log"
 
-	"github.com/Grayson/code-clone-tool/lib/shell"
+	"github.com/grayson/code-clone-tool/lib/shell"
 )
 
 type GitMirrorClient struct {

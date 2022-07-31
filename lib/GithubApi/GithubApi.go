@@ -1,6 +1,6 @@
 package githubapi
 
-import "github.com/Grayson/code-clone-tool/lib/either"
+import "github.com/grayson/code-clone-tool/lib/either"
 
 type GithubOrgReposErrorResponse struct {
 	Message          string `json:"message"`

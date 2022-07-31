@@ -8,11 +8,11 @@ import (
 
 	"github.com/urfave/cli/v2"
 
-	"github.com/Grayson/code-clone-tool/lib"
-	git "github.com/Grayson/code-clone-tool/lib/GitApi"
-	githubapi "github.com/Grayson/code-clone-tool/lib/GithubApi"
-	"github.com/Grayson/code-clone-tool/lib/fs"
-	"github.com/Grayson/code-clone-tool/lib/stage"
+	"github.com/grayson/code-clone-tool/lib"
+	git "github.com/grayson/code-clone-tool/lib/GitApi"
+	githubapi "github.com/grayson/code-clone-tool/lib/GithubApi"
+	"github.com/grayson/code-clone-tool/lib/fs"
+	"github.com/grayson/code-clone-tool/lib/stage"
 )
 
 func main() {

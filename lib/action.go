@@ -3,8 +3,8 @@ package lib
 import (
 	"fmt"
 
-	"github.com/Grayson/code-clone-tool/lib/fs"
-	"github.com/Grayson/code-clone-tool/lib/optional"
+	"github.com/grayson/code-clone-tool/lib/fs"
+	"github.com/grayson/code-clone-tool/lib/optional"
 )
 
 type Task int

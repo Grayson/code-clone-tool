@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Grayson/code-clone-tool/lib"
+	"github.com/grayson/code-clone-tool/lib"
 )
 
 func Test_loadEnvironmentVariables(t *testing.T) {
