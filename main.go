@@ -15,9 +15,15 @@ import (
 	"github.com/grayson/code-clone-tool/lib/stage"
 )
 
+var (
+	version = "dev"
+	date    = "unknown"
+)
+
 func main() {
 	flagsEnv := lib.Env{}
 	cliFlagConfigPath := ""
+	shouldPrintVersion := false
 
 	app := &cli.App{
 		Name:  "code-clone-tool",
@@ -47,8 +53,20 @@ func main() {
 				Aliases:     []string{"c"},
 				Destination: &cliFlagConfigPath,
 			},
+			&cli.BoolFlag{
+				Name:        "version",
+				Usage:       "Print version information and quit",
+				Aliases:     []string{"v"},
+				Destination: &shouldPrintVersion,
+			},
 		},
 		Action: func(*cli.Context) error {
+			if shouldPrintVersion {
+				log.Printf("Version %v built on %v", version, date)
+				log.Println()
+				return nil
+			}
+
 			fileconfigPath := determineConfigPath(cliFlagConfigPath, func() (string, bool) {
 				return os.LookupEnv("CONFIG_PATH")
 			})
