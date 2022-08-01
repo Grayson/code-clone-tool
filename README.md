@@ -6,6 +6,20 @@ a *lot* of repositories?  Have you ever had to migrate to a new computer or
 potentially work with teams that update multiple repos per day?  This tool
 might be useful for you.
 
+## How to install
+
+If you have `go` installed, you can install the latest version using
+`go install`:
+
+    go install github.com/grayson/code-clone-tool@latest
+
+If not, you can open the [list of releases][releases] in your web browser,
+locate the latest release, select the `.tar.gz` archive appropriate to your
+computer, and download the latest release.  From there, you should be able to
+readily copy or move the `code-clone-tool` binary to a `$PATH` directory.
+
+[releases]: https://github.com/Grayson/code-clone-tool/releases
+
 ## What does it do?
 
 Very simply, `code-clone-tool` will receive repo information from the Github API
