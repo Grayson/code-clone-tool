@@ -34,7 +34,7 @@ func (c *GithubClient) FetchOrgInformation(urlString string) (out *either.Either
 		return
 	}
 
-	responses := make([]GithubOrgReposResponse, defaultPageSize)
+	responses := make(GithubOrgReposResponse, 0)
 
 	for page := 0; page < pageLimit; page++ {
 		either, innerErr := getRepos(*u, page, c.personalAccessToken, *c.client)
