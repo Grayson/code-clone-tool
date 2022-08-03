@@ -53,7 +53,7 @@ func (c *GithubClient) FetchOrgInformation(urlString string) (out *either.Either
 		}
 		responses = append(responses, *additionalResponses...)
 
-		if len(*additionalResponses) < pageLimit {
+		if len(*additionalResponses) < defaultPageSize {
 			break
 		}
 	}
