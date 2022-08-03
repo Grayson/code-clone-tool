@@ -51,7 +51,7 @@ func (c *GithubClient) FetchOrgInformation(urlString string) (out *either.Either
 		if !ok {
 			panic("unexpected case where we have neither responses nor errors from Github!")
 		}
-		responses = append(responses, *additionalResponses)
+		responses = append(responses, *additionalResponses...)
 
 		if len(*additionalResponses) < pageLimit {
 			break
