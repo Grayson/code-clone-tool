@@ -62,7 +62,7 @@ variables.  .env file is simply a YAML document with several top-level keys and
 string values.  Finally, there are command line options that will override both
 .env file settings and environment variables.
 
-| Env Var               | .env key              | CLI flag                    |
+| Env Var               | Config file key       | CLI flag                    |
 |-----------------------|-----------------------|-----------------------------|
 |`PERSONAL_ACCESS_TOKEN`|`personal_access_token`|`personalaccesstoken`, `t`   |
 |`API_URL`              |`api_url`              |`url`, `u`                   |
