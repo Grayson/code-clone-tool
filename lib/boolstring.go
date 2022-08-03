@@ -4,6 +4,13 @@ import "strings"
 
 type BoolString string
 
+func NewBoolString(b bool) BoolString {
+	if b {
+		return "true"
+	}
+	return "false"
+}
+
 func (b BoolString) IsTruthy() bool {
 	switch strings.ToLower(string(b)) {
 	case "y":
