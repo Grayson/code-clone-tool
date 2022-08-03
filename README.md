@@ -62,12 +62,13 @@ variables.  .env file is simply a YAML document with several top-level keys and
 string values.  Finally, there are command line options that will override both
 .env file settings and environment variables.
 
-| Env Var               | .env key              | CLI flag                    |
+| Env Var               | Config file key       | CLI flag                    |
 |-----------------------|-----------------------|-----------------------------|
 |`PERSONAL_ACCESS_TOKEN`|`personal_access_token`|`personalaccesstoken`, `t`   |
 |`API_URL`              |`api_url`              |`url`, `u`                   |
 |`WORKING_DIRECTORY`    |`working_directory`    |`workingdirectory`, `wd`, `d`|
 |`CONFIG_PATH`          |n/a                    |`config`, `c`                |
+|`IS_MIRROR`            |`is_mirror`            |`mirror`, `m`                |
 
 The access token and url were discussed above.  The working directory allows you
 to specify a relative or absolute path to use as the working directory.  The
@@ -82,3 +83,13 @@ cloned repositories across multiple organizations or accounts without extraneous
 intermediary directories that contain `.env` files.  This should also allow for
 simpler shell aliases by moving configuration into files rather than repeating
 command line arguments or environment flags.
+
+There may be times when you want to [mirror a repository][mirror] rather than
+clone it.  This will be helpful when you want a snapshot of all of the refs in a
+repo rather than just a clone of the main branch.  The `IS_MIRROR` environment
+variable and related config file key or CLI flag allows you to do just that.  On
+subsequent runs, it will issue a `git remote update` which should update the
+refs.  Note that the update *may be destructive* in that it'll remove refs that 
+no longer exist upstream.
+
+[mirror]: https://git-scm.com/docs/git-clone#Documentation/git-clone.txt---mirror

@@ -24,6 +24,7 @@ func main() {
 	flagsEnv := lib.Env{}
 	cliFlagConfigPath := ""
 	shouldPrintVersion := false
+	shouldMirror := false
 
 	app := &cli.App{
 		Name:  "code-clone-tool",
@@ -54,6 +55,12 @@ func main() {
 				Destination: &cliFlagConfigPath,
 			},
 			&cli.BoolFlag{
+				Name:        "mirror",
+				Usage:       "Mirror a repo rather than clone",
+				Aliases:     []string{"m"},
+				Destination: &shouldMirror,
+			},
+			&cli.BoolFlag{
 				Name:        "version",
 				Usage:       "Print version information and quit",
 				Aliases:     []string{"v"},
@@ -66,6 +73,8 @@ func main() {
 				log.Println()
 				return nil
 			}
+
+			flagsEnv.IsMirror = lib.NewBoolString(shouldMirror)
 
 			fileconfigPath := determineConfigPath(cliFlagConfigPath, func() (string, bool) {
 				return os.LookupEnv("CONFIG_PATH")

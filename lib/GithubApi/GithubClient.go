@@ -6,7 +6,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	neturl "net/url"
 	"strconv"
 
 	"github.com/grayson/code-clone-tool/lib/either"
@@ -29,13 +28,13 @@ func NewClient(client *http.Client, personalAccessToken string) *GithubClient {
 	}
 }
 
-func (c *GithubClient) FetchOrgInformation(url string) (out *either.Either[*GithubOrgReposResponse, *GithubOrgReposErrorResponse], err error) {
-	u, err := neturl.Parse(url)
+func (c *GithubClient) FetchOrgInformation(urlString string) (out *either.Either[*GithubOrgReposResponse, *GithubOrgReposErrorResponse], err error) {
+	u, err := url.Parse(urlString)
 	if err != nil {
 		return
 	}
 
-	responses := make([]GithubOrgReposResponse, defaultPageSize)
+	responses := make(GithubOrgReposResponse, 0)
 
 	for page := 0; page < pageLimit; page++ {
 		either, innerErr := getRepos(*u, page, c.personalAccessToken, *c.client)
@@ -52,9 +51,9 @@ func (c *GithubClient) FetchOrgInformation(url string) (out *either.Either[*Gith
 		if !ok {
 			panic("unexpected case where we have neither responses nor errors from Github!")
 		}
-		responses = append(responses, *additionalResponses)
+		responses = append(responses, *additionalResponses...)
 
-		if len(*additionalResponses) < pageLimit {
+		if len(*additionalResponses) < defaultPageSize {
 			break
 		}
 	}
