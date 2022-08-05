@@ -39,10 +39,6 @@ func LoadEnvironmentVariables(get GetEnvVar) *Env {
 	fieldCount := rtype.NumField()
 	for fieldIndex := 0; fieldIndex < fieldCount; fieldIndex++ {
 		field := rtype.Field(fieldIndex)
-		envKey := field.Tag.Get("env")
-		if envKey == "" {
-			continue
-		}
 		if x, ok := get(field.Tag.Get("env")); ok {
 			relem.FieldByIndex(field.Index).SetString(x)
 		}

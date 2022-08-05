@@ -1,6 +1,8 @@
 package lib
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestBoolString_IsTruthy(t *testing.T) {
 	tests := []struct {
@@ -48,6 +50,35 @@ func TestBoolString_IsTruthy(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := tt.b.IsTruthy(); got != tt.want {
 				t.Errorf("BoolString.IsTruthy() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNewBoolString(t *testing.T) {
+	type args struct {
+		b bool
+	}
+	tests := []struct {
+		name string
+		args args
+		want BoolString
+	}{
+		{
+			"Handle true",
+			args{true},
+			"true",
+		},
+		{
+			"Handle false",
+			args{false},
+			"false",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewBoolString(tt.args.b); got != tt.want {
+				t.Errorf("NewBoolString() = %v, want %v", got, tt.want)
 			}
 		})
 	}
