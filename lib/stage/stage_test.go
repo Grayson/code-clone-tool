@@ -1,8 +1,10 @@
 package stage
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
 	"testing"
 )
 
@@ -150,6 +152,66 @@ func TestFinally(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Finally() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIterate(t *testing.T) {
+	validStart := Start(func() ([]string, error) {
+		return []string{"1", "2", "42"}, nil
+	})
+
+	emptyStart := Start(func() ([]string, error) {
+		return []string{}, nil
+	})
+
+	throwsErrorStart := Start(func() ([]string, error) {
+		return []string{"1", "err", "42"}, nil
+	})
+
+	mapper := func(s string) (int, error) {
+		if s == "err" {
+			return 0, errors.New("expected")
+		}
+		return strconv.Atoi(s)
+	}
+
+	type args struct {
+		prev Stage[[]string]
+		next mapNext[string, int]
+	}
+	tests := []struct {
+		name     string
+		args     args
+		want     []int
+		hasError bool
+	}{
+		{
+			"Test valid iteration",
+			args{validStart, mapper},
+			[]int{1, 2, 42},
+			false,
+		},
+		{
+			"Test empty iteration",
+			args{emptyStart, mapper},
+			[]int{},
+			false,
+		},
+		{
+			"Test error thrown",
+			args{throwsErrorStart, mapper},
+			[]int{},
+			true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := Iterate(tt.args.prev, tt.args.next)
+			expectedAndReceivedError := tt.hasError == (got.Err != nil)
+			if !(expectedAndReceivedError || reflect.DeepEqual(got.Value, tt.want)) {
+				t.Errorf("Iterate() = %v, want %v", got, tt.want)
 			}
 		})
 	}
