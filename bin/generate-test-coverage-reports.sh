@@ -3,17 +3,7 @@
 REPO_ROOT="$(cd "$(dirname "$BASH_SOURCE[0]")"; pwd)"
 
 main() {
-	local packages=(
-		"./"
-		"./lib"
-		"./lib/either"
-		"./lib/fs"
-		"./lib/gitapi"
-		"./lib/githubapi"
-		"./lib/optional"
-		"./lib/shell"
-		"./lib/stage"
-	)
+	local packages=($(find . -name "*_test.go" -printf "%h\n" | sort | uniq))
 
 	local outdir="./coverage_reports"
 	mkdir -p "$outdir"
