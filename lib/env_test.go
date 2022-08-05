@@ -66,6 +66,19 @@ func Test_loadEnvironmentVariables(t *testing.T) {
 	}
 }
 
+func TestEnv_EnsureTags(t *testing.T) {
+	env := lib.Env{}
+	rtype := reflect.TypeOf(env)
+	fieldCount := rtype.NumField()
+	for fieldIndex := 0; fieldIndex < fieldCount; fieldIndex++ {
+		field := rtype.Field(fieldIndex)
+		env := field.Tag.Get("env")
+		if len(env) == 0 {
+			t.Errorf("field %v of Env is missing the 'env' tag", field.Name)
+		}
+	}
+}
+
 func TestEnv_Merge(t *testing.T) {
 	left := lib.Env{
 		ApiUrl:              "apiurl",
