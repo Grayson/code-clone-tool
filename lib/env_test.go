@@ -1,6 +1,7 @@
 package lib_test
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 
@@ -142,15 +143,21 @@ func TestEnv_Merge(t *testing.T) {
 
 func TestLoadEnvironmentYamlFile(t *testing.T) {
 	y := func(yaml string) func() ([]byte, error) {
-		return func() ([]byte, error) { return []byte(yaml), nil }
+		return func() ([]byte, error) {
+			if yaml == "err" {
+				return nil, errors.New("expected")
+			}
+			return []byte(yaml), nil
+		}
 	}
 	type args struct {
 		read lib.ReadYamlFile
 	}
 	tests := []struct {
-		name string
-		args args
-		want *lib.Env
+		name       string
+		args       args
+		want       *lib.Env
+		expectsErr bool
 	}{
 		{
 			"Load all items",
@@ -165,6 +172,7 @@ is_mirror: true`)},
 				WorkingDirectory:    "wd",
 				IsMirror:            "true",
 			},
+			false,
 		},
 		{
 			"Load some items",
@@ -175,16 +183,34 @@ api_url: url`)},
 				PersonalAccessToken: "pat",
 				ApiUrl:              "url",
 			},
+			false,
 		},
 		{
 			"Load no items",
 			args{y("")},
 			&lib.Env{},
+			false,
+		},
+		{
+			"Load invalid yaml",
+			args{y(`---
+personal_access_token: pat
+api_url: ,err`)},
+			nil,
+			true,
+		},
+		{
+			"Handle read errors",
+			args{y("err")},
+			nil,
+			true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := lib.LoadEnvironmentYamlFile(tt.args.read); !reflect.DeepEqual(got, tt.want) {
+			got := lib.LoadEnvironmentYamlFile(tt.args.read)
+			receivedExpectedErr := tt.expectsErr == (got == nil)
+			if !(receivedExpectedErr || reflect.DeepEqual(got, tt.want)) {
 				t.Errorf("LoadEnvironmentYamlFile() = %v, want %v", got, tt.want)
 			}
 		})
