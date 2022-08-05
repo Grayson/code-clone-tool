@@ -170,6 +170,9 @@ func TestIterate(t *testing.T) {
 		return []string{"1", "err", "42"}, nil
 	})
 
+	errorsFromTheStart := Start(func() ([]string, error) {
+		return []string{"1", "2", "3"}, errors.New("expected")
+	})
 	mapper := func(s string) (int, error) {
 		if s == "err" {
 			return 0, errors.New("expected")
@@ -202,6 +205,12 @@ func TestIterate(t *testing.T) {
 		{
 			"Test error thrown",
 			args{throwsErrorStart, mapper},
+			[]int{},
+			true,
+		},
+		{
+			"Test bailing on previous error",
+			args{errorsFromTheStart, mapper},
 			[]int{},
 			true,
 		},
