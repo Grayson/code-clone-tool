@@ -2,7 +2,6 @@ package lib
 
 import (
 	"github.com/grayson/code-clone-tool/lib/fs"
-	"github.com/grayson/code-clone-tool/lib/optional"
 )
 
 //go:generate go run golang.org/x/tools/cmd/stringer@latest -type=Task
@@ -19,10 +18,6 @@ type Action struct {
 	Task   Task
 	Path   string
 	GitUrl string
-}
-
-func (act *Action) Execute() *optional.Optional[*error] {
-	panic("Unimplemented")
 }
 
 type DiscernPathInfo func(path string) (fs.PathExistential, fs.PathType)
