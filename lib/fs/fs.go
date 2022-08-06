@@ -7,6 +7,7 @@ const (
 	DoesNotExist
 )
 
+//go:generate go run golang.org/x/tools/cmd/stringer@latest -type=PathType
 type PathType int
 
 const (

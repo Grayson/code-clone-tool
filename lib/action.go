@@ -1,12 +1,11 @@
 package lib
 
 import (
-	"fmt"
-
 	"github.com/grayson/code-clone-tool/lib/fs"
 	"github.com/grayson/code-clone-tool/lib/optional"
 )
 
+//go:generate go run golang.org/x/tools/cmd/stringer@latest -type=Task
 type Task int
 
 const (
@@ -15,20 +14,6 @@ const (
 	Clone
 	Pull
 )
-
-func (t Task) String() string {
-	switch t {
-	case Unknown:
-		return "Unknown"
-	case Invalid:
-		return "Invalid"
-	case Clone:
-		return "Clone"
-	case Pull:
-		return "Pull"
-	}
-	panic(fmt.Sprintf("Unexpected task case %s", t.String()))
-}
 
 type Action struct {
 	Task   Task
