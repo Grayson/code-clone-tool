@@ -1,12 +1,10 @@
 package lib
 
 import (
-	"fmt"
-
 	"github.com/grayson/code-clone-tool/lib/fs"
-	"github.com/grayson/code-clone-tool/lib/optional"
 )
 
+//go:generate go run golang.org/x/tools/cmd/stringer@latest -type=Task
 type Task int
 
 const (
@@ -16,28 +14,10 @@ const (
 	Pull
 )
 
-func (t Task) String() string {
-	switch t {
-	case Unknown:
-		return "Unknown"
-	case Invalid:
-		return "Invalid"
-	case Clone:
-		return "Clone"
-	case Pull:
-		return "Pull"
-	}
-	panic(fmt.Sprintf("Unexpected task case %s", t.String()))
-}
-
 type Action struct {
 	Task   Task
 	Path   string
 	GitUrl string
-}
-
-func (act *Action) Execute() *optional.Optional[*error] {
-	panic("Unimplemented")
 }
 
 type DiscernPathInfo func(path string) (fs.PathExistential, fs.PathType)

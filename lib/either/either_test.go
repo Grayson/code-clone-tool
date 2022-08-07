@@ -13,6 +13,13 @@ func TestBasicOfCreation(t *testing.T) {
 	}
 }
 
+func TestNeitherValue(t *testing.T) {
+	of := either.Of[int, bool]("42")
+	if of != nil {
+		t.Error("of should be nil")
+	}
+}
+
 func TestLeftValueGetter(t *testing.T) {
 	of := either.Of[int, bool](42)
 	v, ok := of.GetLeft()
