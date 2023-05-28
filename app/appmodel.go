@@ -62,7 +62,7 @@ func (app *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func handleKeyboardEvent(msg tea.KeyMsg, app *AppModel) (tea.Model, tea.Cmd) {
 	switch msg.String() {
-	case "crtl+c", "q":
+	case "ctrl+c", "q":
 		return app, tea.Quit
 	}
 	return app, nil
