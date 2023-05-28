@@ -38,10 +38,7 @@ func NewConfigModel(env *lib.Env, fileSystem fs.Fs) *configmodel {
 }
 
 type cwdMsg string
-type patMsg string
-type urlMsg string
 type showTextInputMsg struct{}
-type hideTextInputMsg struct{}
 
 func (c *configmodel) Init() tea.Cmd {
 	return func() tea.Msg {
