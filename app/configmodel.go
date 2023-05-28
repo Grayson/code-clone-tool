@@ -126,7 +126,7 @@ func getNextCmd(c *configmodel) tea.Cmd {
 
 func getPATCmd(c *configmodel) tea.Cmd {
 	show := func() tea.Msg {
-		resetTextInput(c.textInput, "Personal Access Token", true)
+		resetTextInput(&c.textInput, "Personal Access Token", true)
 		return showTextInputMsg{}
 	}
 	return tea.Sequence(show, c.textInput.Focus())
@@ -134,13 +134,13 @@ func getPATCmd(c *configmodel) tea.Cmd {
 
 func getUrlCmd(c *configmodel) tea.Cmd {
 	show := func() tea.Msg {
-		resetTextInput(c.textInput, "API Url", false)
+		resetTextInput(&c.textInput, "API Url", false)
 		return showTextInputMsg{}
 	}
 	return tea.Sequence(show, c.textInput.Focus())
 }
 
-func resetTextInput(textInput textinput.Model, placeholder string, isSecure bool) {
+func resetTextInput(textInput *textinput.Model, placeholder string, isSecure bool) {
 	textInput.Reset()
 	textInput.Placeholder = placeholder
 	textInput.Cursor.Blink = true
@@ -148,5 +148,7 @@ func resetTextInput(textInput textinput.Model, placeholder string, isSecure bool
 	if isSecure {
 		textInput.EchoMode = textinput.EchoPassword
 		textInput.EchoCharacter = '*'
+	} else {
+		textInput.EchoMode = textinput.EchoNormal
 	}
 }
