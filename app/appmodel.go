@@ -13,7 +13,7 @@ type AppModel struct {
 	env     *lib.Env
 	version string
 
-	err      error
+	Error    error
 	children []tea.Model
 }
 
@@ -49,6 +49,9 @@ func (app *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if cmd != nil {
 			return app, cmd
 		}
+	case errMsg:
+		app.Error = actual
+		return app, tea.Quit
 	}
 
 	for _, model := range app.children {
@@ -65,8 +68,8 @@ func (app *AppModel) View() string {
 	var sb strings.Builder
 
 	fmt.Fprintf(&sb, "code-clone-tool %v\n", app.version)
-	if app.err != nil {
-		fmt.Fprintf(&sb, "%v", app.err)
+	if app.Error != nil {
+		fmt.Fprintf(&sb, "%v", app.Error)
 		return sb.String()
 	}
 
@@ -83,4 +86,10 @@ func handleKeyboardEvent(msg tea.KeyMsg, app *AppModel) tea.Cmd {
 		return tea.Quit
 	}
 	return nil
+}
+
+func reportError(err error) tea.Cmd {
+	return func() tea.Msg {
+		return errMsg(err)
+	}
 }

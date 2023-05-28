@@ -96,6 +96,9 @@ func main() {
 func run(env *lib.Env) error {
 	model := app.InitAppModel(env, version, fs.OsFs{})
 	_, err := tea.NewProgram(model).Run()
+	if err == nil && model.Error != nil {
+		err = model.Error
+	}
 	return err
 
 	// gc := determineGitClient(env.IsMirror.IsTruthy())

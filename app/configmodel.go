@@ -21,7 +21,6 @@ type configmodel struct {
 	isMirror            bool
 	isComplete          bool
 	url                 string
-	err                 error
 }
 
 func NewConfigModel(env *lib.Env, fileSystem fs.Fs) *configmodel {
@@ -45,14 +44,14 @@ func (c *configmodel) Init() tea.Cmd {
 		if c.workingDirectory == "" {
 			path, err := c.fileSystem.GetWorkingDirectory()
 			if err != nil {
-				return errMsg(err)
+				return reportError(err)
 			}
 			return cwdMsg(path)
 		}
 
 		err := c.fileSystem.ChangeWorkingDirectory(c.workingDirectory)
 		if err != nil {
-			return errMsg(err)
+			return reportError(err)
 		}
 		return cwdMsg(c.workingDirectory)
 	}
@@ -63,9 +62,6 @@ func (c *configmodel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case cwdMsg:
 		c.workingDirectory = string(actual)
 		return c, nil
-	case errMsg:
-		c.err = error(actual)
-		return c, tea.Quit
 	case showTextInputMsg:
 		c.shouldShowTextInput = true
 	case tea.KeyMsg:
