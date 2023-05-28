@@ -103,10 +103,10 @@ func (c *configmodel) View() string {
 	}
 
 	fmt.Fprintf(&sb, "Working directory: %v\n", c.workingDirectory)
-	fmt.Fprintf(&sb, "[%v] Has PAT, [%v] Has Url [%v] Use `git clone --mirror`\n", hasPat, hasUrl, isMirror)
+	fmt.Fprintf(&sb, "[%v] Has PAT, [%v] Has Url [%v] Use `git clone --mirror`", hasPat, hasUrl, isMirror)
 
 	if c.shouldShowTextInput {
-		fmt.Fprintln(&sb, c.textInput.View())
+		fmt.Fprintf(&sb, "\n%v", c.textInput.View())
 	}
 
 	return sb.String()
