@@ -3,16 +3,16 @@ package main
 import (
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/urfave/cli/v2"
 
+	"github.com/grayson/code-clone-tool/app"
 	"github.com/grayson/code-clone-tool/lib"
 	git "github.com/grayson/code-clone-tool/lib/GitApi"
 	githubapi "github.com/grayson/code-clone-tool/lib/GithubApi"
 	"github.com/grayson/code-clone-tool/lib/fs"
-	"github.com/grayson/code-clone-tool/lib/stage"
 )
 
 var (
@@ -94,45 +94,49 @@ func main() {
 }
 
 func run(env *lib.Env) error {
-	gc := determineGitClient(env.IsMirror.IsTruthy())
-	fs := fs.OsFs{}
-
-	start := stage.Start(func() (bool, error) { return cwd(fs, env.WorkingDirectory) })
-	repos := stage.Then(
-		start,
-		func(bool) (*githubapi.GithubOrgReposResponse, error) {
-			client := githubapi.NewClient(http.DefaultClient, env.PersonalAccessToken)
-			return fetchRepoInformation(client, env.ApiUrl)
-		},
-	)
-	actions := stage.Then(
-		repos,
-		func(repos *githubapi.GithubOrgReposResponse) (actions []lib.Action, err error) {
-			return mapActions(fs, repos)
-		},
-	)
-	performedTasks := stage.Iterate(
-		actions,
-		func(a lib.Action) (lib.Task, error) {
-			return performGitActions(a, gc)
-		},
-	)
-	counts := stage.Then(
-		performedTasks,
-		countTasks,
-	)
-	log.Println()
-	_, err := stage.Finally(
-		counts,
-		func(m map[lib.Task]int) (bool, error) {
-			for k, v := range m {
-				log.Printf("%v: %v", k, v)
-				log.Println()
-			}
-			return true, nil
-		},
-	)
+	model := app.InitAppModel(env, version, fs.OsFs{})
+	_, err := tea.NewProgram(model).Run()
 	return err
+
+	// gc := determineGitClient(env.IsMirror.IsTruthy())
+	// fs := fs.OsFs{}
+
+	// start := stage.Start(func() (bool, error) { return cwd(fs, env.WorkingDirectory) })
+	// repos := stage.Then(
+	// 	start,
+	// 	func(bool) (*githubapi.GithubOrgReposResponse, error) {
+	// 		client := githubapi.NewClient(http.DefaultClient, env.PersonalAccessToken)
+	// 		return fetchRepoInformation(client, env.ApiUrl)
+	// 	},
+	// )
+	// actions := stage.Then(
+	// 	repos,
+	// 	func(repos *githubapi.GithubOrgReposResponse) (actions []lib.Action, err error) {
+	// 		return mapActions(fs, repos)
+	// 	},
+	// )
+	// performedTasks := stage.Iterate(
+	// 	actions,
+	// 	func(a lib.Action) (lib.Task, error) {
+	// 		return performGitActions(a, gc)
+	// 	},
+	// )
+	// counts := stage.Then(
+	// 	performedTasks,
+	// 	countTasks,
+	// )
+	// log.Println()
+	// _, err := stage.Finally(
+	// 	counts,
+	// 	func(m map[lib.Task]int) (bool, error) {
+	// 		for k, v := range m {
+	// 			log.Printf("%v: %v", k, v)
+	// 			log.Println()
+	// 		}
+	// 		return true, nil
+	// 	},
+	// )
+	// return err
 }
 
 func determineGitClient(isMirror bool) git.GitApi {
