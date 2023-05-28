@@ -18,5 +18,6 @@ const (
 
 type Fs interface {
 	ChangeWorkingDirectory(string) error
+	GetWorkingDirectory() (string, error)
 	Info(path string) (PathExistential, PathType)
 }
