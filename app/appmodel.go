@@ -25,6 +25,7 @@ func InitAppModel(env *lib.Env, version string, fileSystem fs.Fs) *AppModel {
 		env: env,
 		children: []tea.Model{
 			NewConfigModel(env, fileSystem),
+			&fetchreposmodel{},
 		},
 	}
 }
