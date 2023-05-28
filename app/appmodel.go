@@ -60,14 +60,6 @@ func (app *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return app, nil
 }
 
-func handleKeyboardEvent(msg tea.KeyMsg, app *AppModel) (tea.Model, tea.Cmd) {
-	switch msg.String() {
-	case "ctrl+c", "q":
-		return app, tea.Quit
-	}
-	return app, nil
-}
-
 func (app *AppModel) View() string {
 	var sb strings.Builder
 
@@ -80,4 +72,12 @@ func (app *AppModel) View() string {
 	fmt.Fprintf(&sb, "Working directory: %v", app.currentWorkingDirectory)
 
 	return sb.String()
+}
+
+func handleKeyboardEvent(msg tea.KeyMsg, app *AppModel) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case "ctrl+c", "q":
+		return app, tea.Quit
+	}
+	return app, nil
 }
