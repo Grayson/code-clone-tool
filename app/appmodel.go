@@ -18,6 +18,7 @@ type AppModel struct {
 }
 
 type errMsg error
+type configurationCompleteMsg struct{}
 
 func InitAppModel(env *lib.Env, version string, fileSystem fs.Fs) *AppModel {
 	return &AppModel{

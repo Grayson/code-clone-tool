@@ -125,6 +125,11 @@ func getNextCmd(c *configmodel) tea.Cmd {
 		return getUrlCmd(c)
 	}
 
+	if !c.isComplete {
+		c.isComplete = true
+		return func() tea.Msg { return configurationCompleteMsg{} }
+	}
+
 	return nil
 }
 
