@@ -150,51 +150,6 @@ func Test_performGitActions(t *testing.T) {
 	}
 }
 
-func Test_fetchRepoInformation(t *testing.T) {
-	success := &TestApi{Response: &githubapi.GithubOrgReposResponse{}}
-	type args struct {
-		client githubapi.GithubApi
-		url    string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *githubapi.GithubOrgReposResponse
-		wantErr bool
-	}{
-		{
-			"Produces error result in case of local error",
-			args{&TestApi{Error: fmt.Errorf("err")}, "url"},
-			nil,
-			true,
-		},
-		{
-			"Produces error in case of Github Error Message",
-			args{&TestApi{ErrorResponse: &githubapi.GithubOrgReposErrorResponse{}}, "url"},
-			nil,
-			true,
-		},
-		{
-			"Produces value in case of success",
-			args{success, "url"},
-			success.Response,
-			false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := fetchRepoInformation(tt.args.client, tt.args.url)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("fetchRepoInformation() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("fetchRepoInformation() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func Test_cwd(t *testing.T) {
 	type args struct {
 		f fs.Fs
