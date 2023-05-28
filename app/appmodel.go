@@ -6,6 +6,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/grayson/code-clone-tool/lib"
+	githubapi "github.com/grayson/code-clone-tool/lib/GithubApi"
 	"github.com/grayson/code-clone-tool/lib/fs"
 )
 
@@ -18,7 +19,16 @@ type AppModel struct {
 }
 
 type errMsg error
-type configurationCompleteMsg struct{}
+
+type configurationCompleteMsg struct {
+	personalAccessToken string
+	url                 string
+	isMirror            bool
+}
+
+type repoResponseMsg struct {
+	repos *githubapi.GithubOrgReposResponse
+}
 
 func InitAppModel(env *lib.Env, version string, fileSystem fs.Fs) *AppModel {
 	return &AppModel{

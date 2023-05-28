@@ -123,7 +123,13 @@ func getNextCmd(c *configmodel) tea.Cmd {
 
 	if !c.isComplete {
 		c.isComplete = true
-		return func() tea.Msg { return configurationCompleteMsg{} }
+		return func() tea.Msg {
+			return configurationCompleteMsg{
+				personalAccessToken: c.personalAccessToken,
+				url:                 c.url,
+				isMirror:            c.isMirror,
+			}
+		}
 	}
 
 	return nil
