@@ -43,7 +43,10 @@ func (app *AppModel) Init() tea.Cmd {
 func (app *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch actual := msg.(type) {
 	case tea.KeyMsg:
-		return handleKeyboardEvent(actual, app)
+		cmd := handleKeyboardEvent(actual, app)
+		if cmd != nil {
+			return app, cmd
+		}
 	}
 
 	for _, model := range app.children {
@@ -72,10 +75,10 @@ func (app *AppModel) View() string {
 	return sb.String()
 }
 
-func handleKeyboardEvent(msg tea.KeyMsg, app *AppModel) (tea.Model, tea.Cmd) {
+func handleKeyboardEvent(msg tea.KeyMsg, app *AppModel) tea.Cmd {
 	switch msg.String() {
 	case "q", tea.KeyCtrlC.String(), tea.KeyEsc.String():
-		return app, tea.Quit
+		return tea.Quit
 	}
-	return app, nil
+	return nil
 }
