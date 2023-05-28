@@ -380,6 +380,10 @@ func (f *TestFs) ChangeWorkingDirectory(_ string) error {
 	return f.Error
 }
 
+func (*TestFs) GetWorkingDirectory() (string, error) {
+	panic("not implemented") // TODO: Implement
+}
+
 func (f *TestFs) Info(path string) (fs.PathExistential, fs.PathType) {
 	x := f.FileInfo[path]
 	return x.E, x.T
