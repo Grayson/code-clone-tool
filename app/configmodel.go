@@ -18,6 +18,8 @@ type configmodel struct {
 
 	workingDirectory    string
 	personalAccessToken string
+	isMirror            bool
+	isComplete          bool
 	url                 string
 	err                 error
 }
@@ -31,6 +33,7 @@ func NewConfigModel(env *lib.Env, fileSystem fs.Fs) *configmodel {
 		workingDirectory:    env.WorkingDirectory,
 		personalAccessToken: env.PersonalAccessToken,
 		url:                 env.ApiUrl,
+		isMirror:            env.IsMirror.IsTruthy(),
 	}
 }
 
@@ -94,7 +97,7 @@ func (c *configmodel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (c *configmodel) View() string {
 	var sb strings.Builder
 
-	hasPat, hasUrl := " ", " "
+	hasPat, hasUrl, isMirror := " ", " ", " "
 	if len(c.personalAccessToken) != 0 {
 		hasPat = "✓"
 	}
@@ -102,8 +105,12 @@ func (c *configmodel) View() string {
 		hasUrl = "✓"
 	}
 
+	if c.isMirror {
+		isMirror = "✓"
+	}
+
 	fmt.Fprintf(&sb, "Working directory: %v\n", c.workingDirectory)
-	fmt.Fprintf(&sb, "[%v] Has PAT, [%v] Has Url\n", hasPat, hasUrl)
+	fmt.Fprintf(&sb, "[%v] Has PAT, [%v] Has Url [%v] Use `git clone --mirror`\n", hasPat, hasUrl, isMirror)
 
 	if c.shouldShowTextInput {
 		fmt.Fprintln(&sb, c.textInput.View())
