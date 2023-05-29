@@ -142,13 +142,6 @@ func run(env *lib.Env) error {
 	// return err
 }
 
-func determineGitClient(isMirror bool) git.GitApi {
-	if isMirror {
-		return git.CreateMirrorClient(log.Default())
-	}
-	return git.CreateGitClient(log.Default())
-}
-
 func determineConfigPath(initial string, fallback func() (string, bool)) string {
 	if initial != "" {
 		return initial
@@ -187,19 +180,6 @@ func performGitActions(action lib.Action, gc git.GitApi) (lib.Task, error) {
 	}
 	log.Print(output)
 	return task, nil
-}
-
-func fetchRepoInformation(client githubapi.GithubApi, url string) (*githubapi.GithubOrgReposResponse, error) {
-	resp, err := client.FetchOrgInformation(url)
-	if err != nil {
-		return nil, err
-	}
-
-	if errResp, ok := resp.GetRight(); ok {
-		return nil, fmt.Errorf("service error with the following message:\n%v\n\n%v", errResp.Message, errResp.DocumentationURL)
-	}
-	repos, _ := resp.GetLeft()
-	return repos, nil
 }
 
 func cwd(f fs.Fs, p string) (bool, error) {
