@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"log"
+	"path"
 	"sync/atomic"
 
 	"github.com/charmbracelet/bubbles/progress"
@@ -23,18 +24,21 @@ type performGitActionsModel struct {
 	completed atomic.Int32
 	next      atomic.Int32
 
-	actions []lib.Action
-	api     git.GitApi
-	state   performingGitActionsState
+	activeActions [4]*lib.Action
+	actions       []lib.Action
+	api           git.GitApi
+	state         performingGitActionsState
 }
 
 type doingGitActionMsg struct {
-	index int
+	index            int
+	concurrencyIndex int
 }
 
 type finishedGitActionMsg struct {
-	index int
-	task  lib.Task
+	concurrencyIndex int
+	task             lib.Task
+	url              string
 }
 
 type finishedPerformingGitActions struct{}
@@ -85,7 +89,7 @@ func (m *performGitActionsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case configurationCompleteMsg:
 		m.shouldMirror = actual.isMirror
 	case doingGitActionMsg:
-		return m, performGitAction(m.actions, actual.index, m.api)
+		return m, performGitAction(actual.index, actual.concurrencyIndex, m)
 	case finishedGitActionMsg:
 		m.completed.Add(1)
 		if int(m.completed.Load()) == m.total {
@@ -96,7 +100,14 @@ func (m *performGitActionsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		next := int(m.next.Add(1))
 		var cmd tea.Cmd
 		if next < m.total {
-			cmd = performGitAction(m.actions, next, m.api)
+			cmd = func() tea.Msg {
+				return doingGitActionMsg{
+					index:            next,
+					concurrencyIndex: actual.concurrencyIndex,
+				}
+			}
+		} else {
+			m.activeActions[actual.concurrencyIndex] = nil
 		}
 		return m, cmd
 	}
@@ -109,16 +120,36 @@ func (m *performGitActionsModel) View() string {
 		return ""
 	}
 	completed := m.completed.Load()
-	return fmt.Sprintf("%v of %v finished\n%v", completed, m.total, m.progress.ViewAs(float64(completed)/float64(m.total)))
+
+	toUI := func(t lib.Task) string {
+		switch t {
+		case lib.Pull:
+			return "pulling"
+		case lib.Clone:
+			return "cloning"
+		}
+		return ""
+	}
+
+	lines := ""
+	for idx := 0; idx < 4; idx++ {
+		act := m.activeActions[idx]
+		if act == nil {
+			continue
+		}
+		lines = fmt.Sprintf("%v> %v %v\n", lines, toUI(act.Task), path.Base(act.GitUrl))
+	}
+
+	return fmt.Sprintf("%v\n%v of %v finished\n%v", lines, completed, m.total, m.progress.ViewAs(float64(completed)/float64(m.total)))
 }
 
 func startGitActions(m *performGitActionsModel) tea.Cmd {
 	m.next.Store(4)
 	return tea.Batch(
-		func() tea.Msg { return doingGitActionMsg{0} },
-		func() tea.Msg { return doingGitActionMsg{1} },
-		func() tea.Msg { return doingGitActionMsg{2} },
-		func() tea.Msg { return doingGitActionMsg{3} },
+		func() tea.Msg { return doingGitActionMsg{0, 0} },
+		func() tea.Msg { return doingGitActionMsg{1, 1} },
+		func() tea.Msg { return doingGitActionMsg{2, 2} },
+		func() tea.Msg { return doingGitActionMsg{3, 3} },
 	)
 }
 
@@ -134,7 +165,10 @@ func mapActions(fs fs.Fs, repos *githubapi.GithubOrgReposResponse) (actions []li
 	return
 }
 
-func performGitAction(actions []lib.Action, index int, api git.GitApi) tea.Cmd {
+func performGitAction(index int, concurrencyIndex int, m *performGitActionsModel) tea.Cmd {
+	actions := m.actions
+	api := m.api
+
 	return func() tea.Msg {
 		var err error
 		action := actions[index]
@@ -151,9 +185,12 @@ func performGitAction(actions []lib.Action, index int, api git.GitApi) tea.Cmd {
 			return reportError(err)
 		}
 		// TODO: print result of git command to file, see `_` usages
+
+		m.activeActions[concurrencyIndex] = &action
 		return finishedGitActionMsg{
-			index: (index + 1),
-			task:  task,
+			concurrencyIndex: concurrencyIndex,
+			task:             task,
+			url:              action.GitUrl,
 		}
 	}
 }
