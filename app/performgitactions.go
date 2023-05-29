@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"log"
+	"sync/atomic"
 
 	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
@@ -19,7 +20,8 @@ type performGitActionsModel struct {
 
 	progress  progress.Model
 	total     int
-	completed int
+	completed atomic.Int32
+	next      atomic.Int32
 
 	actions []lib.Action
 	api     git.GitApi
@@ -85,12 +87,18 @@ func (m *performGitActionsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case doingGitActionMsg:
 		return m, performGitAction(m.actions, actual.index, m.api)
 	case finishedGitActionMsg:
-		m.completed++
-		if m.completed == m.total {
+		m.completed.Add(1)
+		if int(m.completed.Load()) == m.total {
 			m.state = finishedPerformingGitActionsState
 			return m, func() tea.Msg { return finishedPerformingGitActions{} }
 		}
-		return m, performGitAction(m.actions, actual.index, m.api)
+
+		next := int(m.next.Add(1))
+		var cmd tea.Cmd
+		if next < m.total {
+			cmd = performGitAction(m.actions, next, m.api)
+		}
+		return m, cmd
 	}
 
 	return m, nil
@@ -100,13 +108,18 @@ func (m *performGitActionsModel) View() string {
 	if m.state == waitingToPerformGitActionsState {
 		return ""
 	}
-	return fmt.Sprintf("%v of %v finished\n%v", m.completed, m.total, m.progress.ViewAs(float64(m.completed)/float64(m.total)))
+	completed := m.completed.Load()
+	return fmt.Sprintf("%v of %v finished\n%v", completed, m.total, m.progress.ViewAs(float64(completed)/float64(m.total)))
 }
 
 func startGitActions(m *performGitActionsModel) tea.Cmd {
-	return func() tea.Msg {
-		return doingGitActionMsg{0}
-	}
+	m.next.Store(4)
+	return tea.Batch(
+		func() tea.Msg { return doingGitActionMsg{0} },
+		func() tea.Msg { return doingGitActionMsg{1} },
+		func() tea.Msg { return doingGitActionMsg{2} },
+		func() tea.Msg { return doingGitActionMsg{3} },
+	)
 }
 
 func mapActions(fs fs.Fs, repos *githubapi.GithubOrgReposResponse) (actions []lib.Action, err error) {
