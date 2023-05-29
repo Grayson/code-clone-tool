@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/grayson/code-clone-tool/lib"
 	git "github.com/grayson/code-clone-tool/lib/GitApi"
@@ -16,6 +17,7 @@ type performGitActionsModel struct {
 	fileSystem   fs.Fs
 	shouldMirror bool
 
+	progress  progress.Model
 	total     int
 	completed int
 
@@ -41,10 +43,14 @@ const (
 func NewPerformGitActionsModel(fileSystem fs.Fs) *performGitActionsModel {
 	file, _ := tea.LogToFile("git_actions.log", "debug")
 	log := log.New(file, "", 0)
+	// TODO: Cleanup file
+
+	progress := progress.New()
 
 	return &performGitActionsModel{
 		fileSystem: fileSystem,
 		log:        log,
+		progress:   progress,
 	}
 }
 
@@ -54,6 +60,9 @@ func (m *performGitActionsModel) Init() tea.Cmd {
 
 func (m *performGitActionsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch actual := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.progress.Width = actual.Width - 8
+		return m, nil
 	case repoResponseMsg:
 		actions, err := mapActions(m.fileSystem, actual.repos)
 		if err != nil {
@@ -63,6 +72,7 @@ func (m *performGitActionsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.api = determineGitClient(m.shouldMirror, m.log)
 		m.actions = actions
 		m.total = len(actions)
+		m.state = updatingPerformingGitActionsState
 
 		return m, startGitActions(m)
 	case configurationCompleteMsg:
@@ -72,6 +82,7 @@ func (m *performGitActionsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case finishedGitActionMsg:
 		m.completed++
 		if m.completed == m.total {
+			m.state = finishedPerformingGitActionsState
 			return m, func() tea.Msg { return finishedPerformingGitActions{} }
 		}
 		return m, performGitAction(m.actions, int(actual), m.api)
@@ -81,10 +92,10 @@ func (m *performGitActionsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *performGitActionsModel) View() string {
-	if m.state == waitingToPerformGitActionsState || m.state == finishedPerformingGitActionsState {
+	if m.state == waitingToPerformGitActionsState {
 		return ""
 	}
-	return fmt.Sprintf("%v of %v finished", m.completed, m.total)
+	return fmt.Sprintf("%v of %v finished\n%v", m.completed, m.total, m.progress.ViewAs(float64(m.completed)/float64(m.total)))
 }
 
 func startGitActions(m *performGitActionsModel) tea.Cmd {
