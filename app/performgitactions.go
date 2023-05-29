@@ -29,7 +29,12 @@ type performGitActionsModel struct {
 type doingGitActionMsg struct {
 	index int
 }
-type finishedGitActionMsg int
+
+type finishedGitActionMsg struct {
+	index int
+	task  lib.Task
+}
+
 type finishedPerformingGitActions struct{}
 
 type performingGitActionsState int
@@ -85,7 +90,7 @@ func (m *performGitActionsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.state = finishedPerformingGitActionsState
 			return m, func() tea.Msg { return finishedPerformingGitActions{} }
 		}
-		return m, performGitAction(m.actions, int(actual), m.api)
+		return m, performGitAction(m.actions, actual.index, m.api)
 	}
 
 	return m, nil
@@ -120,7 +125,7 @@ func performGitAction(actions []lib.Action, index int, api git.GitApi) tea.Cmd {
 	return func() tea.Msg {
 		var err error
 		action := actions[index]
-		// task := action.Task
+		task := action.Task
 		switch action.Task {
 		case lib.Clone:
 			_, err = api.Clone(action.GitUrl, action.Path)
@@ -133,7 +138,10 @@ func performGitAction(actions []lib.Action, index int, api git.GitApi) tea.Cmd {
 			return reportError(err)
 		}
 		// TODO: print result of git command to file, see `_` usages
-		return finishedGitActionMsg(index + 1)
+		return finishedGitActionMsg{
+			index: (index + 1),
+			task:  task,
+		}
 	}
 }
 

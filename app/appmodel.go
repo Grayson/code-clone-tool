@@ -37,6 +37,7 @@ func InitAppModel(env *lib.Env, version string, fileSystem fs.Fs) *AppModel {
 			NewConfigModel(env, fileSystem),
 			&fetchreposmodel{},
 			NewPerformGitActionsModel(fileSystem),
+			&counttasksmodel{},
 		},
 	}
 }
