@@ -5,17 +5,18 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/grayson/code-clone-tool/lib"
 	githubapi "github.com/grayson/code-clone-tool/lib/GithubApi"
 	"github.com/grayson/code-clone-tool/lib/fs"
 )
 
 type AppModel struct {
-	env     *lib.Env
-	version string
+	env *lib.Env
 
-	Error    error
-	children []tea.Model
+	Error       error
+	children    []tea.Model
+	headerStyle lipgloss.Style
 }
 
 type errMsg error
@@ -31,6 +32,9 @@ type repoResponseMsg struct {
 }
 
 func InitAppModel(env *lib.Env, version string, fileSystem fs.Fs) *AppModel {
+	versionStyle := lipgloss.NewStyle().Faint(true).SetString(version)
+	header := fmt.Sprintf("code-clone-tool \n%v", versionStyle)
+
 	return &AppModel{
 		env: env,
 		children: []tea.Model{
@@ -39,6 +43,10 @@ func InitAppModel(env *lib.Env, version string, fileSystem fs.Fs) *AppModel {
 			NewPerformGitActionsModel(fileSystem),
 			&counttasksmodel{},
 		},
+		headerStyle: lipgloss.NewStyle().
+			Bold(true).
+			BorderStyle(lipgloss.RoundedBorder()).
+			SetString(header),
 	}
 }
 
@@ -78,7 +86,7 @@ func (app *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (app *AppModel) View() string {
 	var sb strings.Builder
 
-	fmt.Fprintf(&sb, "code-clone-tool %v\n", app.version)
+	fmt.Fprintf(&sb, "%v\n", app.headerStyle.String())
 	if app.Error != nil {
 		fmt.Fprintf(&sb, "%v", app.Error)
 		return sb.String()
