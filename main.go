@@ -100,46 +100,6 @@ func run(env *lib.Env) error {
 		err = model.Error
 	}
 	return err
-
-	// gc := determineGitClient(env.IsMirror.IsTruthy())
-	// fs := fs.OsFs{}
-
-	// start := stage.Start(func() (bool, error) { return cwd(fs, env.WorkingDirectory) })
-	// repos := stage.Then(
-	// 	start,
-	// 	func(bool) (*githubapi.GithubOrgReposResponse, error) {
-	// 		client := githubapi.NewClient(http.DefaultClient, env.PersonalAccessToken)
-	// 		return fetchRepoInformation(client, env.ApiUrl)
-	// 	},
-	// )
-	// actions := stage.Then(
-	// 	repos,
-	// 	func(repos *githubapi.GithubOrgReposResponse) (actions []lib.Action, err error) {
-	// 		return mapActions(fs, repos)
-	// 	},
-	// )
-	// performedTasks := stage.Iterate(
-	// 	actions,
-	// 	func(a lib.Action) (lib.Task, error) {
-	// 		return performGitActions(a, gc)
-	// 	},
-	// )
-	// counts := stage.Then(
-	// 	performedTasks,
-	// 	countTasks,
-	// )
-	// log.Println()
-	// _, err := stage.Finally(
-	// 	counts,
-	// 	func(m map[lib.Task]int) (bool, error) {
-	// 		for k, v := range m {
-	// 			log.Printf("%v: %v", k, v)
-	// 			log.Println()
-	// 		}
-	// 		return true, nil
-	// 	},
-	// )
-	// return err
 }
 
 func determineConfigPath(initial string, fallback func() (string, bool)) string {
