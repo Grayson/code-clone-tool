@@ -10,6 +10,10 @@ func (o OsFs) ChangeWorkingDirectory(path string) error {
 	return os.Chdir(path)
 }
 
+func (OsFs) GetWorkingDirectory() (string, error) {
+	return os.Getwd()
+}
+
 func (o OsFs) Info(path string) (PathExistential, PathType) {
 	info, err := os.Stat(path)
 	if err != nil && os.IsNotExist(err) {

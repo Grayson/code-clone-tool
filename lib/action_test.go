@@ -71,6 +71,10 @@ func (fs *TestFs) ChangeWorkingDirectory(_ string) error {
 	panic("not implemented") // TODO: Implement
 }
 
+func (fs *TestFs) GetWorkingDirectory() (string, error) {
+	panic("not implemented")
+}
+
 func (fs *TestFs) Info(path string) (fs.PathExistential, fs.PathType) {
 	out := fs.filesytem[path]
 	return out.Existential, out.Type

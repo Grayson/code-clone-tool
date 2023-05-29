@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/grayson/code-clone-tool/app"
 	"github.com/grayson/code-clone-tool/lib"
 	githubapi "github.com/grayson/code-clone-tool/lib/GithubApi"
 	"github.com/grayson/code-clone-tool/lib/either"
@@ -75,7 +76,7 @@ func Test_countTasks(t *testing.T) {
 func Test_performGitActions(t *testing.T) {
 	type args struct {
 		action lib.Action
-		gc     TestGit
+		gc     app.TestGit
 	}
 	tests := []struct {
 		name    string
@@ -91,7 +92,7 @@ func Test_performGitActions(t *testing.T) {
 					Path:   "path",
 					GitUrl: "ssh://git-repo",
 				},
-				TestGit{},
+				app.TestGit{},
 			},
 			lib.Clone,
 			false,
@@ -104,7 +105,7 @@ func Test_performGitActions(t *testing.T) {
 					Path:   "path",
 					GitUrl: "ssh://git-repo",
 				},
-				TestGit{},
+				app.TestGit{},
 			},
 			lib.Pull,
 			false,
@@ -117,7 +118,7 @@ func Test_performGitActions(t *testing.T) {
 					Path:   "path",
 					GitUrl: "ssh://git-repo",
 				},
-				TestGit{},
+				app.TestGit{},
 			},
 			lib.Invalid,
 			true,
@@ -130,7 +131,7 @@ func Test_performGitActions(t *testing.T) {
 					Path:   "path",
 					GitUrl: "ssh://git-repo",
 				},
-				TestGit{},
+				app.TestGit{},
 			},
 			lib.Invalid,
 			true,
@@ -150,51 +151,6 @@ func Test_performGitActions(t *testing.T) {
 	}
 }
 
-func Test_fetchRepoInformation(t *testing.T) {
-	success := &TestApi{Response: &githubapi.GithubOrgReposResponse{}}
-	type args struct {
-		client githubapi.GithubApi
-		url    string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *githubapi.GithubOrgReposResponse
-		wantErr bool
-	}{
-		{
-			"Produces error result in case of local error",
-			args{&TestApi{Error: fmt.Errorf("err")}, "url"},
-			nil,
-			true,
-		},
-		{
-			"Produces error in case of Github Error Message",
-			args{&TestApi{ErrorResponse: &githubapi.GithubOrgReposErrorResponse{}}, "url"},
-			nil,
-			true,
-		},
-		{
-			"Produces value in case of success",
-			args{success, "url"},
-			success.Response,
-			false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := fetchRepoInformation(tt.args.client, tt.args.url)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("fetchRepoInformation() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("fetchRepoInformation() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func Test_cwd(t *testing.T) {
 	type args struct {
 		f fs.Fs
@@ -208,13 +164,13 @@ func Test_cwd(t *testing.T) {
 	}{
 		{
 			"No error",
-			args{&TestFs{}, "path"},
+			args{&app.TestFs{}, "path"},
 			true,
 			false,
 		},
 		{
 			"Error",
-			args{&TestFs{Error: fmt.Errorf("err")}, "path"},
+			args{&app.TestFs{Error: fmt.Errorf("err")}, "path"},
 			false,
 			true,
 		},
@@ -247,8 +203,8 @@ func Test_mapActions(t *testing.T) {
 		{
 			"Test",
 			args{
-				&TestFs{
-					FileInfo: map[string]TestFsInfo{
+				&app.TestFs{
+					FileInfo: map[string]app.TestFsInfo{
 						"clone": {fs.DoesNotExist, fs.None},
 						"pull":  {fs.Exists, fs.IsDirectory},
 						"file":  {fs.Exists, fs.IsFile},
@@ -333,21 +289,6 @@ func Test_determineConfigPath(t *testing.T) {
 
 // Test implementations
 
-type TestGit struct {
-	DidClone bool
-	DidPull  bool
-}
-
-func (g *TestGit) Clone(gitUrl string, path string) (string, error) {
-	g.DidClone = true
-	return "stdout", nil
-}
-
-func (g *TestGit) Pull(destinationDir string) (string, error) {
-	g.DidPull = true
-	return "stdout", nil
-}
-
 type TestApi struct {
 	Error         error
 	ErrorResponse *githubapi.GithubOrgReposErrorResponse
@@ -364,23 +305,4 @@ func (api *TestApi) FetchOrgInformation(url string) (*either.Either[*githubapi.G
 		return of(api.ErrorResponse), nil
 	}
 	return of(api.Response), nil
-}
-
-type TestFsInfo struct {
-	E fs.PathExistential
-	T fs.PathType
-}
-
-type TestFs struct {
-	Error    error
-	FileInfo map[string]TestFsInfo
-}
-
-func (f *TestFs) ChangeWorkingDirectory(_ string) error {
-	return f.Error
-}
-
-func (f *TestFs) Info(path string) (fs.PathExistential, fs.PathType) {
-	x := f.FileInfo[path]
-	return x.E, x.T
 }
