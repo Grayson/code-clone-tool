@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/grayson/code-clone-tool/lib"
 )
 
@@ -12,9 +13,11 @@ type counttasksmodel struct {
 	clones int
 
 	isVisible bool
+	style     lipgloss.Style
 }
 
 func (c *counttasksmodel) Init() tea.Cmd {
+	c.style = lipgloss.NewStyle().Faint(true)
 	return nil
 }
 
@@ -37,5 +40,5 @@ func (c *counttasksmodel) View() string {
 	if !c.isVisible {
 		return ""
 	}
-	return fmt.Sprintf("%v Pulls; %v Clones", c.pulls, c.clones)
+	return c.style.Render(fmt.Sprintf("%v Pulls; %v Clones", c.pulls, c.clones))
 }
