@@ -65,14 +65,13 @@ func (app *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return app, tea.Quit
 	}
 
+	cmds := make([]tea.Cmd, 0)
 	for _, model := range app.children {
 		_, cmd := model.Update(msg)
-		if cmd != nil {
-			return app, cmd
-		}
+		cmds = append(cmds, cmd)
 	}
 
-	return app, nil
+	return app, tea.Batch(cmds...)
 }
 
 func (app *AppModel) View() string {
