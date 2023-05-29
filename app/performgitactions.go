@@ -3,6 +3,7 @@ package app
 import (
 	"fmt"
 	"log"
+	"os"
 	"path"
 	"sync/atomic"
 
@@ -15,6 +16,7 @@ import (
 )
 
 type performGitActionsModel struct {
+	logfile      *os.File
 	log          *log.Logger
 	fileSystem   fs.Fs
 	shouldMirror bool
@@ -54,15 +56,19 @@ const (
 func NewPerformGitActionsModel(fileSystem fs.Fs) *performGitActionsModel {
 	file, _ := tea.LogToFile("git_actions.log", "debug")
 	log := log.New(file, "", 0)
-	// TODO: Cleanup file
 
 	progress := progress.New()
 
 	return &performGitActionsModel{
 		fileSystem: fileSystem,
 		log:        log,
+		logfile:    file,
 		progress:   progress,
 	}
+}
+
+func (m *performGitActionsModel) Dispose() {
+	m.logfile.Close()
 }
 
 func (m *performGitActionsModel) Init() tea.Cmd {

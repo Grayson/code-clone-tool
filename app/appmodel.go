@@ -71,7 +71,7 @@ func (app *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case errMsg:
 		app.Error = actual
-		return app, tea.Quit
+		return app, app.quit()
 	}
 
 	cmds := make([]tea.Cmd, 0)
@@ -102,9 +102,23 @@ func (app *AppModel) View() string {
 func handleKeyboardEvent(msg tea.KeyMsg, app *AppModel) tea.Cmd {
 	switch msg.String() {
 	case "q", tea.KeyCtrlC.String(), tea.KeyEsc.String():
-		return tea.Quit
+		return app.quit()
 	}
 	return nil
+}
+
+func (app *AppModel) quit() tea.Cmd {
+	dispose(app.children)
+	return tea.Quit
+}
+
+func dispose(children []tea.Model) {
+	for _, child := range children {
+		switch actual := child.(type) {
+		case disposable:
+			actual.Dispose()
+		}
+	}
 }
 
 func reportError(err error) tea.Cmd {
