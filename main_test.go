@@ -76,7 +76,7 @@ func Test_countTasks(t *testing.T) {
 func Test_performGitActions(t *testing.T) {
 	type args struct {
 		action lib.Action
-		gc     TestGit
+		gc     app.TestGit
 	}
 	tests := []struct {
 		name    string
@@ -92,7 +92,7 @@ func Test_performGitActions(t *testing.T) {
 					Path:   "path",
 					GitUrl: "ssh://git-repo",
 				},
-				TestGit{},
+				app.TestGit{},
 			},
 			lib.Clone,
 			false,
@@ -105,7 +105,7 @@ func Test_performGitActions(t *testing.T) {
 					Path:   "path",
 					GitUrl: "ssh://git-repo",
 				},
-				TestGit{},
+				app.TestGit{},
 			},
 			lib.Pull,
 			false,
@@ -118,7 +118,7 @@ func Test_performGitActions(t *testing.T) {
 					Path:   "path",
 					GitUrl: "ssh://git-repo",
 				},
-				TestGit{},
+				app.TestGit{},
 			},
 			lib.Invalid,
 			true,
@@ -131,7 +131,7 @@ func Test_performGitActions(t *testing.T) {
 					Path:   "path",
 					GitUrl: "ssh://git-repo",
 				},
-				TestGit{},
+				app.TestGit{},
 			},
 			lib.Invalid,
 			true,
@@ -203,8 +203,8 @@ func Test_mapActions(t *testing.T) {
 		{
 			"Test",
 			args{
-				&TestFs{
-					FileInfo: map[string]TestFsInfo{
+				&app.TestFs{
+					FileInfo: map[string]app.TestFsInfo{
 						"clone": {fs.DoesNotExist, fs.None},
 						"pull":  {fs.Exists, fs.IsDirectory},
 						"file":  {fs.Exists, fs.IsFile},
