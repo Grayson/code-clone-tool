@@ -12,6 +12,7 @@ import (
 )
 
 type performGitActionsModel struct {
+	log          *log.Logger
 	fileSystem   fs.Fs
 	shouldMirror bool
 
@@ -38,8 +39,12 @@ const (
 )
 
 func NewPerformGitActionsModel(fileSystem fs.Fs) *performGitActionsModel {
+	file, _ := tea.LogToFile("git_actions.log", "debug")
+	log := log.New(file, "", 0)
+
 	return &performGitActionsModel{
 		fileSystem: fileSystem,
+		log:        log,
 	}
 }
 
@@ -55,7 +60,7 @@ func (m *performGitActionsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, reportError(err)
 		}
 
-		m.api = determineGitClient(m.shouldMirror)
+		m.api = determineGitClient(m.shouldMirror, m.log)
 		m.actions = actions
 		m.total = len(actions)
 
@@ -121,9 +126,9 @@ func performGitAction(actions []lib.Action, index int, api git.GitApi) tea.Cmd {
 	}
 }
 
-func determineGitClient(isMirror bool) git.GitApi {
+func determineGitClient(isMirror bool, log *log.Logger) git.GitApi {
 	if isMirror {
-		return git.CreateMirrorClient(log.Default())
+		return git.CreateMirrorClient(log)
 	}
-	return git.CreateGitClient(log.Default())
+	return git.CreateGitClient(log)
 }
