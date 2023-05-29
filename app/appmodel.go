@@ -36,6 +36,7 @@ func InitAppModel(env *lib.Env, version string, fileSystem fs.Fs) *AppModel {
 		children: []tea.Model{
 			NewConfigModel(env, fileSystem),
 			&fetchreposmodel{},
+			NewPerformGitActionsModel(fileSystem),
 		},
 	}
 }
