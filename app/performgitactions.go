@@ -54,14 +54,12 @@ const (
 )
 
 func NewPerformGitActionsModel(fileSystem fs.Fs) *performGitActionsModel {
-	file, _ := tea.LogToFile("git_actions.log", "debug")
-	log := log.New(file, "", 0)
-
+	file, _ := tea.LogToFile("code-clone-tool.log", "debug")
 	progress := progress.New()
 
 	return &performGitActionsModel{
 		fileSystem: fileSystem,
-		log:        log,
+		log:        log.Default(),
 		logfile:    file,
 		progress:   progress,
 	}
@@ -177,20 +175,21 @@ func performGitAction(index int, concurrencyIndex int, m *performGitActionsModel
 
 	return func() tea.Msg {
 		var err error
+		var result string
 		action := actions[index]
 		task := action.Task
 		switch action.Task {
 		case lib.Clone:
-			_, err = api.Clone(action.GitUrl, action.Path)
+			result, err = api.Clone(action.GitUrl, action.Path)
 		case lib.Pull:
-			_, err = api.Pull(action.Path)
+			result, err = api.Pull(action.Path)
 		default:
 			err = fmt.Errorf("unexpected task: %v", action.Task.String())
 		}
 		if err != nil {
 			return reportError(err)
 		}
-		// TODO: print result of git command to file, see `_` usages
+		m.log.Println(result)
 
 		m.activeActions[concurrencyIndex] = &action
 		return finishedGitActionMsg{
