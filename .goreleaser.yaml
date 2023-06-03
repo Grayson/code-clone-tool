@@ -26,3 +26,12 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+brews:
+  - name: code-clone-tool
+    homepage: "https://github.com/Grayson/code-clone-tool"
+    tap:
+      owner: grayson
+      name: homebrew-grayson
+    commit_author:
+      name: Grayson Hansard
+      email: grayson.hansard@gmail.com

@@ -12,9 +12,14 @@ check_goreleaser() {
 
 ensure_github_token() {
 	if [[ "" == $GITHUB_TOKEN ]]; then
+		export GITHUB_TOKEN="$(op item get "code-clone-tool goreleaser token" --fields notesPlain)"
+	fi
+
+	if [[ "" == $GITHUB_TOKEN ]]; then
 		read -t 10 -p "Enter your Github Token (minimum \`write:packages\`): " token
 		export GITHUB_TOKEN="$token"
 	fi
+
 	if [[ "" == $GITHUB_TOKEN ]]; then
 		echo "No valid github token provided"
 		exit 1
