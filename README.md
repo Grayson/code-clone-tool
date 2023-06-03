@@ -8,6 +8,14 @@ might be useful for you.
 
 ## How to install
 
+If you have [Homebrew][hb] installed, you can install it with two Terminal
+commands:
+
+[hb]: https://brew.sh
+
+    brew tap Grayson/homebrew-grayson
+    brew install code-clone-tool
+
 If you have `go` installed, you can install the latest version using
 `go install`:
 
